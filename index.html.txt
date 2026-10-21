@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>精緻裝潢與記帳水管家</title>
+    
+    <!-- iOS PWA 必備 Meta 設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="莫蘭迪記帳">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/609/609803.png">
+
+    <!-- 引入 Chart.js (用於劃出圖片中漂亮的平滑流線趨勢圖) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #e8ecf3;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --card-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            
+            /* 莫蘭迪粉彩配色 */
+            --coral-pink: #ff8a8a;
+            --soft-purple: #7a63ff;
+            --mint-green: #2dd4bf;
+            --dark-card: #0f172a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 20px 15px 90px 15px;
+            -webkit-user-select: none;
+        }
+
+        /* 頂部 Header 與頭像列 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .top-title h2 { margin: 0; font-size: 22px; font-weight: 800; }
+        .top-title p { margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted); }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral-pink), var(--soft-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(122, 99, 255, 0.3);
+        }
+
+        /* 莫蘭迪風格 頁籤 */
+        .tab-switcher {
+            display: flex;
+            background: #dbe1e8;
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        /* 主卡片：懸浮立體信用卡質感 (My Card) */
+        .credit-card-style {
+            background: linear-gradient(135deg, #7a63ff 0%, #a855f7 50%, #ec4899 100%);
+            border-radius: 28px;
+            padding: 22px;
+            color: white;
+            box-shadow: 0 15px 35px rgba(122, 99, 255, 0.35);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .credit-card-style::after {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 150px; height: 150px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+        }
+
+        .card-label { font-size: 13px; opacity: 0.85; letter-spacing: 0.5px; }
+        .card-amount { font-size: 28px; font-weight: 800; margin: 8px 0 15px 0; }
+
+        .card-sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 12px 15px;
+        }
+
+        .card-sub-item span { font-size: 11px; opacity: 0.8; display: block; }
+        .card-sub-item strong { font-size: 15px; display: block; margin-top: 2px; }
+
+        /* 深色主題趨勢卡片 (Dark Dashboard) */
+        .dark-card {
+            background: var(--dark-card);
+            border-radius: 28px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+            margin-bottom: 20px;
+        }
+
+        /* 柔和白底通用卡片 */
+        .white-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .white-card h3 { margin: 0 0 15px 0; font-size: 16px; font-weight: 700; }
+
+        /* 表單元件 */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+            background: #f8fafc;
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--coral-pink), #f43f5e);
+            box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+            margin-top: 5px;
+        }
+
+        /* 水平滑動的分類卡片 (如同圖片右下角) */
+        .categories-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .category-box {
+            min-width: 110px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .category-box.active {
+            background: linear-gradient(135deg, #ff8a8a, #ff6b6b);
+            color: white;
+        }
+
+        .category-icon {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 8px auto;
+            font-size: 18px;
+        }
+
+        .category-box.active .category-icon { background: rgba(255,255,255,0.2); }
+
+        /* 明細列表項 */
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .list-item:last-child { border-bottom: none; }
+
+        .badge-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .badge-paid { background: #e0e7ff; color: #4338ca; }
+        .badge-unpaid { background: #ffe4e6; color: #e11d48; }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部列 -->
+    <div class="top-bar">
+        <div class="top-title">
+            <h2>My Budget</h2>
+            <p>裝潢與日常水管家</p>
+        </div>
+        <div class="avatar">K</div>
+    </div>
+
+    <!-- 莫蘭迪分段切換 -->
+    <div class="tab-switcher">
+        <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢水位</button>
+        <button class="tab-btn" onclick="switchTab('daily')">💸 日常記帳</button>
+    </div>
+
+    <!-- ================= 裝潢專屬頁面 (預設) ================= -->
+    <div id="renovation-page">
+        
+        <!-- 卡片 1：懸浮主卡片 (預算現金水位) -->
+        <div class="credit-card-style">
+            <div class="card-label">RENOVATION WATER LEVEL</div>
+            <div class="card-amount" id="renov-water-level">$0</div>
+            
+            <div class="card-sub-grid">
+                <div class="card-sub-item">
+                    <span>總裝潢預算</span>
+                    <strong id="renov-total-budget">$0</strong>
+                </div>
+                <div class="card-sub-item">
+                    <span>已支付工程款</span>
+                    <strong id="renov-paid-total">$0</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片 2：深色趨勢圖卡片 (如圖片右側圖表) -->
+        <div class="dark-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 13px; color: #94a3b8;">未支付工程款水位</span>
+                <strong style="color: #f43f5e;" id="renov-unpaid-total">$0</strong>
+            </div>
+            <!-- 平滑波浪圖表 -->
+            <canvas id="waterChart" height="110"></canvas>
+        </div>
+
+        <!-- 橫向滑動卡片：設定與功能 -->
+        <div class="white-card">
+            <h3>⚙️ 快速設定</h3>
+            <div class="form-group">
+                <label>設定裝潢總預算 (NTD)</label>
+                <input type="number" id="budget-input" placeholder="例：1500000">
+            </div>
+            <button class="btn-action" style="background: linear-gradient(135deg, #7a63ff, #9333ea);" onclick="setTotalBudget()">更新總預算水位</button>
+        </div>
+
+        <!-- 新增裝潢工程卡片 -->
+        <div class="white-card">
+            <h3>🔨 新增裝潢 / 家電工程款</h3>
+            <div class="form-group">
+                <label>項目名稱</label>
+                <input type="text" id="renov-item-name" placeholder="例：第一期泥作、木工、冷氣">
+            </div>
+            <div class="form-group">
+                <label>工程金額</label>
+                <input type="number" id="renov-item-amount" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>支付狀態</label>
+                <select id="renov-item-status">
+                    <option value="unpaid">尚未支付 ⏳</option>
+                    <option value="paid">已支付 ✅</option>
+                </select>
+            </div>
+            <button class="btn-action" onclick="addRenovationItem()">新增項目</button>
+        </div>
+
+        <!-- 明細列表 -->
+        <div class="white-card">
+            <h3>📝 裝潢工程款明細</h3>
+            <div id="renovation-list"></div>
+        </div>
+    </div>
+
+    <!-- ================= 日常記帳頁面 ================= -->
+    <div id="daily-page" style="display: none;">
+        <!-- 分類滾動卡片 (如同圖片右下) -->
+        <div style="margin-bottom: 15px;">
+            <div class="categories-scroll">
+                <div class="category-box active">
+                    <div class="category-icon">🚗</div>
+                    <div style="font-size: 12px; font-weight: bold;">Taxi</div>
+                    <div style="font-size: 11px; opacity: 0.8;">$870.45</div>
+                </div>
+                <div class="category-box">
+                    <div class="category-icon">🍔</div>
+                    <div style="font-size: 12px; font-weight: bold; color: var(--text-dark);">Food</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">$600.45</div>
+                </div>
+                <div class="category-box">
+                    <div class="category-icon">💊</div>
+                    <div style="font-size: 12px; font-weight: bold; color: var(--text-dark);">Health</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">$1100.50</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="white-card">
+            <h3>➕ 快速記帳</h3>
+            <div class="form-group">
+                <label>類型</label>
+                <select id="daily-type">
+                    <option value="expense">支出 💸</option>
+                    <option value="income">收入 💰</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>消費項目</label>
+                <input type="text" id="daily-name" placeholder="例：午餐、計程車">
+            </div>
+            <div class="form-group">
+                <label>金額</label>
+                <input type="number" id="daily-amount" placeholder="0">
+            </div>
+            <button class="btn-action" onclick="addDailyRecord()">儲存紀錄</button>
+        </div>
+
+        <div class="white-card">
+            <h3>Recent Expenses</h3>
+            <div id="daily-list"></div>
+        </div>
+    </div>
+
+<script>
+    // 資料本地儲存
+    let state = JSON.parse(localStorage.getItem('beauty_budget_app')) || {
+        daily: [],
+        renovationBudget: 1200000,
+        renovationItems: [
+            { id: 1, name: "設計費與監工", amount: 120000, status: "paid" },
+            { id: 2, name: "第一期泥作拆除", amount: 250000, status: "paid" },
+            { id: 3, name: "全屋木工與系統櫃", amount: 480000, status: "unpaid" }
+        ]
+    };
+
+    let chartInstance = null;
+
+    function saveData() {
+        localStorage.setItem('beauty_budget_app', JSON.stringify(state));
+        render();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (tab === 'renovation') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('renovation-page').style.display = 'block';
+            document.getElementById('daily-page').style.display = 'none';
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('renovation-page').style.display = 'none';
+            document.getElementById('daily-page').style.display = 'block';
+        }
+    }
+
+    function setTotalBudget() {
+        const budget = parseFloat(document.getElementById('budget-input').value);
+        if (isNaN(budget)) return alert('請輸入有效預算金額');
+        state.renovationBudget = budget;
+        document.getElementById('budget-input').value = '';
+        saveData();
+    }
+
+    function addRenovationItem() {
+        const name = document.getElementById('renov-item-name').value.trim();
+        const amount = parseFloat(document.getElementById('renov-item-amount').value);
+        const status = document.getElementById('renov-item-status').value;
+
+        if (!name || isNaN(amount)) return alert('請填寫完整名稱與金額');
+
+        state.renovationItems.unshift({ id: Date.now(), name, amount, status });
+        document.getElementById('renov-item-name').value = '';
+        document.getElementById('renov-item-amount').value = '';
+        saveData();
+    }
+
+    function toggleStatus(id) {
+        const item = state.renovationItems.find(i => i.id === id);
+        if (item) {
+            item.status = item.status === 'paid' ? 'unpaid' : 'paid';
+            saveData();
+        }
+    }
+
+    function addDailyRecord() {
+        const name = document.getElementById('daily-name').value.trim();
+        const amount = parseFloat(document.getElementById('daily-amount').value);
+        const type = document.getElementById('daily-type').value;
+
+        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
+
+        state.daily.unshift({ id: Date.now(), name, amount, type, date: new Date().toLocaleDateString() });
+        document.getElementById('daily-name').value = '';
+        document.getElementById('daily-amount').value = '';
+        saveData();
+    }
+
+    function render() {
+        // 計算金額
+        let paidTotal = 0;
+        let unpaidTotal = 0;
+
+        state.renovationItems.forEach(i => {
+            if (i.status === 'paid') paidTotal += i.amount;
+            else unpaidTotal += i.amount;
+        });
+
+        const waterLevel = state.renovationBudget - paidTotal;
+
+        document.getElementById('renov-water-level').innerText = `$${waterLevel.toLocaleString()}`;
+        document.getElementById('renov-total-budget').innerText = `$${state.renovationBudget.toLocaleString()}`;
+        document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
+        document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
+
+        // 渲染裝潢列表
+        const renovList = document.getElementById('renovation-list');
+        renovList.innerHTML = state.renovationItems.map(item => `
+            <div class="list-item" onclick="toggleStatus(${item.id})">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top:2px;">點擊快速切換狀態</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 800; font-size: 15px;">$${item.amount.toLocaleString()}</div>
+                    <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}">
+                        ${item.status === 'paid' ? '已支付 ✅' : '未支付 ⏳'}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+
+        // 渲染日常紀錄
+        const dailyList = document.getElementById('daily-list');
+        dailyList.innerHTML = state.daily.map(item => `
+            <div class="list-item">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${item.date}</div>
+                </div>
+                <div style="font-weight: 800; font-size: 15px; color: ${item.type === 'income' ? '#10b981' : '#f43f5e'}">
+                    ${item.type === 'income' ? '+' : '-'} $${item.amount.toLocaleString()}
+                </div>
+            </div>
+        `).join('');
+
+        // 渲染流線波浪圖表 (Chart.js)
+        renderChart(paidTotal, unpaidTotal, waterLevel);
+    }
+
+    function renderChart(paid, unpaid, water) {
+        const ctx = document.getElementById('waterChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['總預算', '已支付', '未支付', '剩餘水位'],
+                datasets: [{
+                    data: [state.renovationBudget, paid, unpaid, water],
+                    borderColor: '#ff8a8a',
+                    borderWidth: 3,
+                    tension: 0.4, // 圓滑曲線
+                    fill: true,
+                    backgroundColor: 'rgba(255, 138, 138, 0.15)'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
+                    y: { display: false }
+                }
+            }
+        });
+    }
+
+    render();
+</script>
+</body>
+</html>
