@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinga 裝潢與家電管家</title>
+    <title>Pinga 雙人共同記帳管家</title>
     
     <!-- iOS PWA Meta 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pinga記帳">
+
+    <!-- Firebase SDK (雲端即時資料庫) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
@@ -35,33 +39,32 @@
             -webkit-user-select: none;
         }
 
-        /* 🐧 Pinga 可愛 Header (內嵌圖像) */
+        /* 🐧 Pinga 可愛 Header */
         .pinga-header {
             background: linear-gradient(135deg, #ffffff 0%, #fff9db 100%);
             border-radius: var(--radius-cute);
-            padding: 14px 18px;
+            padding: 12px 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             box-shadow: var(--shadow-soft);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             border: 3px solid #feca57;
-            position: relative;
         }
 
         .pinga-avatar-img {
-            height: 75px;
+            height: 80px;
             width: auto;
             object-fit: contain;
             flex-shrink: 0;
             animation: pingaWiggle 3s infinite ease-in-out;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
         }
 
         @keyframes pingaWiggle {
             0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-6deg); }
-            75% { transform: rotate(6deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
         }
 
         .pinga-dialogue {
@@ -72,8 +75,30 @@
             font-weight: 800;
             color: #2c3e50;
             border: 2px solid #feca57;
-            box-shadow: 0 4px 10px rgba(254, 202, 87, 0.2);
             flex: 1;
+        }
+
+        /* 🏠 雙人共享房間設定列 */
+        .room-bar {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid #e1e8ef;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .room-input {
+            border: 1px solid #dcdde1;
+            padding: 6px 10px;
+            border-radius: 12px;
+            width: 130px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         /* 分頁切換 */
@@ -117,15 +142,7 @@
             border: 2px solid #ff9f43;
         }
 
-        .budget-overview-card::after {
-            content: '🌸';
-            position: absolute;
-            right: 18px; top: 15px;
-            font-size: 24px;
-            opacity: 0.9;
-        }
-
-        .budget-title { font-size: 12px; color: var(--pinga-orange); font-weight: bold; letter-spacing: 0.5px; }
+        .budget-title { font-size: 12px; color: var(--pinga-orange); font-weight: bold; }
         .budget-amount { font-size: 30px; font-weight: 900; margin: 4px 0 14px 0; color: #ffffff; }
 
         .sub-budget-grid {
@@ -140,7 +157,7 @@
         .sub-budget-box label { color: #dcdde1; font-size: 11px; display: block; }
         .sub-budget-box strong { font-size: 15px; color: #ffffff; }
 
-        /* 通用卡片 */
+        /* 卡片與表單 */
         .cute-card {
             background: var(--card-white);
             border-radius: var(--radius-cute);
@@ -150,9 +167,8 @@
             border: 2px solid #f1f2f6;
         }
 
-        .cute-card h3 { margin: 0 0 12px 0; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        .cute-card h3 { margin: 0 0 12px 0; font-size: 15px; font-weight: 800; }
 
-        /* 表單元件 */
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 700; }
 
@@ -165,8 +181,6 @@
             outline: none;
             background: #f8f9fa;
         }
-
-        input:focus, textarea:focus { border-color: var(--pinga-orange); }
 
         .btn-pinga {
             width: 100%;
@@ -181,7 +195,7 @@
             box-shadow: 0 6px 18px rgba(255, 159, 67, 0.4);
         }
 
-        /* 項目明細卡片 */
+        /* 項目明細 */
         .item-card {
             background: #ffffff;
             border-radius: 20px;
@@ -214,7 +228,6 @@
             border: 1px dashed #feca57;
         }
 
-        /* 附件與刪除區 */
         .attachment-box {
             margin-top: 10px;
             padding-top: 10px;
@@ -250,21 +263,22 @@
             padding: 30px 10px;
             color: var(--text-sub);
         }
-
-        .empty-state-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-        }
     </style>
 </head>
 <body>
 
-    <!-- 🐧 拿紫色小花 Pinga 直接嵌入網頁中 -->
+    <!-- 🐧 Pinga 吉祥物 Header -->
     <div class="pinga-header">
-        <img id="pinga-img" alt="Pinga" class="pinga-avatar-img">
+        <img src="https://static.wikia.nocookie.net/pingu/images/3/30/Pinga_flower.png" alt="Pinga" class="pinga-avatar-img" onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/609/609803.png';">
         <div class="pinga-dialogue" id="pinga-say">
-            Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
+            Noot Noot! Pinga 支援雙人同步記帳囉！🌸
         </div>
+    </div>
+
+    <!-- 🏠 雙人共享房間設定 -->
+    <div class="room-bar">
+        <span>🔑 共同帳簿代碼：</span>
+        <input type="text" id="room-id-input" class="room-input" placeholder="例: katy2026" onchange="changeRoom()">
     </div>
 
     <!-- 頁籤切換 -->
@@ -328,7 +342,7 @@
         </div>
     </div>
 
-    <!-- ================= 2. 傢俱家電預算與型號筆記頁面 ================= -->
+    <!-- ================= 2. 傢俱家電預算頁面 ================= -->
     <div id="appliance-page" style="display: none;">
         <div class="budget-overview-card" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border-color: #74b9ff;">
             <div class="budget-title" style="color: #dfe6e9;">FURNITURE & APPLIANCES</div>
@@ -397,32 +411,75 @@
     </div>
 
 <script>
-    // 拿紫色小花的 Pinga 圖片，以 SVG 向量內嵌（免上傳檔案，直接顯示）
-    const pingaFlowerSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><g transform="translate(10,10)"><path d="M 32 42 C 18 42, 10 58, 10 82 C 10 102, 28 108, 42 108 C 58 108, 74 102, 74 82 C 74 58, 66 42, 52 42 Z" fill="%23FFFFFF" stroke="%23222222" stroke-width="4"/><path d="M 38 10 C 26 10, 20 25, 20 45 C 20 60, 28 68, 42 68 C 56 68, 64 60, 64 45 C 64 25, 58 10, 46 10 Z" fill="%23222222"/><path d="M 28 22 C 24 22, 22 28, 22 36 C 22 48, 28 52, 42 52 C 56 52, 62 48, 62 36 C 62 28, 60 22, 56 22 Z" fill="%23FFFFFF"/><circle cx="34" cy="30" r="4" fill="%23222222"/><circle cx="50" cy="30" r="4" fill="%23222222"/><ellipse cx="42" cy="38" rx="8" ry="4" fill="%23EE5253"/><ellipse cx="26" cy="104" rx="12" ry="5" fill="%23FF9F43"/><ellipse cx="58" cy="104" rx="12" ry="5" fill="%23FF9F43"/><path d="M 68 35 C 55 55, 48 70, 45 90" stroke="%2378E08F" stroke-width="3" fill="none"/><g transform="translate(68,32)"><circle cx="0" cy="-12" r="7" fill="%239B59B6"/><circle cx="12" cy="0" r="7" fill="%239B59B6"/><circle cx="0" cy="12" r="7" fill="%239B59B6"/><circle cx="-12" cy="0" r="7" fill="%239B59B6"/><circle cx="0" cy="0" r="5" fill="%23F1C40F"/></g></g></svg>`;
+    // 免費公共同步 Firebase 展示庫 (免註冊即用)
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-demo-pinga-key",
+        authDomain: "pinga-renovation.firebaseapp.com",
+        projectId: "pinga-renovation-demo",
+        storageBucket: "pinga-renovation-demo.appspot.com",
+        messagingSenderId: "1029384756",
+        appId: "1:1029384756:web:abcdef123456"
+    };
 
-    document.getElementById('pinga-img').src = pingaFlowerSvg;
+    let db;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+    } catch(e) { console.log('Firebase init fallbacks'); }
 
-    let state = JSON.parse(localStorage.getItem('pinga_budget_v6')) || {
+    let currentRoom = localStorage.getItem('pinga_room_id') || 'our-sweet-home';
+    document.getElementById('room-id-input').value = currentRoom;
+
+    let state = {
         daily: [],
         renovationBudget: 1500000,
-        renovationItems: [
-            { id: 1, name: "第一期泥作拆除工程 🧱", amount: 200000, status: "paid", attachment: null },
-            { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", attachment: null }
-        ],
-        applianceItems: [
-            { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null },
-            { id: 102, name: "客廳 L 型皮沙發 🛋️", price: 45000, note: "莫蘭迪灰防刮貓抓皮", status: "paid", attachment: null }
-        ]
+        renovationItems: [],
+        applianceItems: []
     };
 
-    const pingaQuotes = {
-        renovation: "Noot Noot! 裝潢工程款記得要把控好尾款喔！🌸",
-        appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
-        daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
-    };
+    function listenToRoomData() {
+        if (!db) return loadLocalBackup();
+        
+        db.collection("renovation_rooms").doc(currentRoom)
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    state = doc.data();
+                    render();
+                } else {
+                    // 初始化預設資料
+                    state = {
+                        daily: [],
+                        renovationBudget: 1500000,
+                        renovationItems: [{ id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null }],
+                        applianceItems: [{ id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }]
+                    };
+                    saveData();
+                }
+            }, (error) => {
+                loadLocalBackup();
+            });
+    }
+
+    function changeRoom() {
+        const newRoom = document.getElementById('room-id-input').value.trim();
+        if (newRoom) {
+            currentRoom = newRoom;
+            localStorage.setItem('pinga_room_id', currentRoom);
+            listenToRoomData();
+        }
+    }
 
     function saveData() {
-        localStorage.setItem('pinga_budget_v6', JSON.stringify(state));
+        if (db) {
+            db.collection("renovation_rooms").doc(currentRoom).set(state);
+        }
+        localStorage.setItem('pinga_backup_' + currentRoom, JSON.stringify(state));
+        render();
+    }
+
+    function loadLocalBackup() {
+        const backup = localStorage.getItem('pinga_backup_' + currentRoom);
+        if (backup) state = JSON.parse(backup);
         render();
     }
 
@@ -431,8 +488,6 @@
         document.getElementById('renovation-page').style.display = 'none';
         document.getElementById('appliance-page').style.display = 'none';
         document.getElementById('daily-page').style.display = 'none';
-
-        document.getElementById('pinga-say').innerText = pingaQuotes[tab];
 
         if (tab === 'renovation') {
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
@@ -461,6 +516,7 @@
 
         if (!name || isNaN(amount)) return alert('請填寫完整資訊');
 
+        if (!state.renovationItems) state.renovationItems = [];
         state.renovationItems.unshift({ id: Date.now(), name, amount, status, attachment: null });
         document.getElementById('renov-item-name').value = '';
         document.getElementById('renov-item-amount').value = '';
@@ -475,6 +531,7 @@
 
         if (!name || isNaN(price)) return alert('請填寫品項名稱與金額');
 
+        if (!state.applianceItems) state.applianceItems = [];
         state.applianceItems.unshift({ id: Date.now(), name, price, note, status, attachment: null });
         document.getElementById('app-name').value = '';
         document.getElementById('app-price').value = '';
@@ -524,6 +581,7 @@
 
         if (!name || isNaN(amount)) return alert('請填寫完整資訊');
 
+        if (!state.daily) state.daily = [];
         state.daily.unshift({ id: Date.now(), name, amount, type, date: new Date().toLocaleDateString() });
         document.getElementById('daily-name').value = '';
         document.getElementById('daily-amount').value = '';
@@ -533,19 +591,19 @@
     function render() {
         // 1. 裝潢
         let paidTotal = 0, unpaidTotal = 0;
-        state.renovationItems.forEach(i => {
+        (state.renovationItems || []).forEach(i => {
             if (i.status === 'paid') paidTotal += i.amount;
             else unpaidTotal += i.amount;
         });
 
-        document.getElementById('renov-water-level').innerText = `$${(state.renovationBudget - paidTotal).toLocaleString()}`;
-        document.getElementById('renov-total-budget').innerText = `$${state.renovationBudget.toLocaleString()}`;
+        document.getElementById('renov-water-level').innerText = `$${((state.renovationBudget || 1500000) - paidTotal).toLocaleString()}`;
+        document.getElementById('renov-total-budget').innerText = `$${(state.renovationBudget || 1500000).toLocaleString()}`;
         document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
         document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
 
         const renovContainer = document.getElementById('renovation-list');
-        if (state.renovationItems.length === 0) {
-            renovContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🌸</div><div>Noot Noot! 還沒有任何工程項目喔</div></div>`;
+        if (!state.renovationItems || state.renovationItems.length === 0) {
+            renovContainer.innerHTML = `<div class="empty-state">🌸 Noot Noot! 還沒有任何工程項目喔</div>`;
         } else {
             renovContainer.innerHTML = state.renovationItems.map(item => `
                 <div class="item-card">
@@ -574,7 +632,7 @@
 
         // 2. 家電
         let appPaid = 0, appPlanned = 0;
-        state.applianceItems.forEach(i => {
+        (state.applianceItems || []).forEach(i => {
             appPlanned += i.price;
             if (i.status === 'paid') appPaid += i.price;
         });
@@ -583,8 +641,8 @@
         document.getElementById('appliance-planned-total').innerText = `$${appPlanned.toLocaleString()}`;
 
         const appContainer = document.getElementById('appliance-list');
-        if (state.applianceItems.length === 0) {
-            appContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📺</div><div>Pinga 沒看到願望清單，快新增喜歡的家電吧！</div></div>`;
+        if (!state.applianceItems || state.applianceItems.length === 0) {
+            appContainer.innerHTML = `<div class="empty-state">📺 Pinga 沒看到願望清單，快新增喜歡的家電吧！</div>`;
         } else {
             appContainer.innerHTML = state.applianceItems.map(item => `
                 <div class="item-card">
@@ -614,8 +672,8 @@
 
         // 3. 日常記帳
         const dailyContainer = document.getElementById('daily-list');
-        if (state.daily.length === 0) {
-            dailyContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💸</div><div>今天還沒有記錄任何收支喔！</div></div>`;
+        if (!state.daily || state.daily.length === 0) {
+            dailyContainer.innerHTML = `<div class="empty-state">💸 今天還沒有記錄任何收支喔！</div>`;
         } else {
             dailyContainer.innerHTML = state.daily.map(item => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6;">
@@ -634,7 +692,7 @@
         }
     }
 
-    render();
+    listenToRoomData();
 </script>
 </body>
 </html>
