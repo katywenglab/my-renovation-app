@@ -3,348 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>精緻裝潢與記帳水管家</title>
+    <title>Pinga 裝潢與家電管家</title>
     
-    <!-- iOS PWA 必備 Meta 設定 -->
+    <!-- iOS PWA Meta 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="莫蘭迪記帳">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/609/609803.png">
-
-    <!-- 引入 Chart.js (用於劃出圖片中漂亮的平滑流線趨勢圖) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="apple-mobile-web-app-title" content="Pinga記帳">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/SVG_Penguin.svg/1200px-SVG_Penguin.svg.png">
 
     <style>
         :root {
-            --bg-main: #e8ecf3;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --card-bg: #ffffff;
-            --card-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-            
-            /* 莫蘭迪粉彩配色 */
-            --coral-pink: #ff8a8a;
-            --soft-purple: #7a63ff;
-            --mint-green: #2dd4bf;
-            --dark-card: #0f172a;
+            --pinga-black: #22252a;
+            --pinga-orange: #ff9f43;
+            --pinga-red: #ee5253;
+            --pinga-yellow: #feca57;
+            --bg-pingu: #f4f6f9;
+            --card-white: #ffffff;
+            --text-main: #2d3436;
+            --text-sub: #8395a7;
+            --radius-cute: 24px;
+            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "PingFang TC", sans-serif;
+            background-color: var(--bg-pingu);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px 15px 90px 15px;
+            padding: 15px 15px 90px 15px;
             -webkit-user-select: none;
         }
 
-        /* 頂部 Header 與頭像列 */
-        .top-bar {
+        /* 🐧 Pinga 頂部列 */
+        .pinga-header {
+            background: #ffffff;
+            border-radius: var(--radius-cute);
+            padding: 16px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 15px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+            border: 2px solid #e1e8ef;
         }
 
-        .top-title h2 { margin: 0; font-size: 22px; font-weight: 800; }
-        .top-title p { margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted); }
-
-        .avatar {
-            width: 42px;
-            height: 42px;
+        .pinga-avatar-box {
+            width: 55px; height: 55px;
+            background: #22252a;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--coral-pink), var(--soft-purple));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(122, 99, 255, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
 
-        /* 莫蘭迪風格 頁籤 */
+        .pinga-dialogue {
+            background: #f8efba;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* 三個可愛頁籤切換 */
         .tab-switcher {
             display: flex;
-            background: #dbe1e8;
+            background: #e2e8f0;
             border-radius: 20px;
             padding: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            gap: 4px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 10px;
+            padding: 10px 4px;
             border: none;
             background: transparent;
-            color: var(--text-muted);
-            font-weight: 700;
-            font-size: 14px;
+            color: var(--text-sub);
+            font-weight: 800;
+            font-size: 13px;
             border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .tab-btn.active {
-            background: white;
-            color: var(--text-dark);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-
-        /* 主卡片：懸浮立體信用卡質感 (My Card) */
-        .credit-card-style {
-            background: linear-gradient(135deg, #7a63ff 0%, #a855f7 50%, #ec4899 100%);
-            border-radius: 28px;
-            padding: 22px;
+            background: var(--pinga-black);
             color: white;
-            box-shadow: 0 15px 35px rgba(122, 99, 255, 0.35);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .credit-card-style::after {
-            content: '';
-            position: absolute;
-            top: -50px; right: -50px;
-            width: 150px; height: 150px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
+        /* 🐧 預算數字卡片 */
+        .budget-overview-card {
+            background: linear-gradient(135deg, #22252a 0%, #343a40 100%);
+            border-radius: 28px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 12px 28px rgba(34, 37, 42, 0.25);
+            margin-bottom: 16px;
         }
 
-        .card-label { font-size: 13px; opacity: 0.85; letter-spacing: 0.5px; }
-        .card-amount { font-size: 28px; font-weight: 800; margin: 8px 0 15px 0; }
+        .budget-title { font-size: 12px; color: var(--pinga-orange); font-weight: bold; }
+        .budget-amount { font-size: 28px; font-weight: 900; margin: 4px 0 14px 0; }
 
-        .card-sub-grid {
+        .sub-budget-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 18px;
-            padding: 12px 15px;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 12px;
+            border-radius: 16px;
         }
 
-        .card-sub-item span { font-size: 11px; opacity: 0.8; display: block; }
-        .card-sub-item strong { font-size: 15px; display: block; margin-top: 2px; }
+        .sub-budget-box label { color: #a4b0be; font-size: 11px; display: block; }
+        .sub-budget-box strong { font-size: 14px; color: #ffffff; }
 
-        /* 深色主題趨勢卡片 (Dark Dashboard) */
-        .dark-card {
-            background: var(--dark-card);
-            border-radius: 28px;
-            padding: 20px;
-            color: white;
-            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
-            margin-bottom: 20px;
+        /* 通用卡片 */
+        .cute-card {
+            background: var(--card-white);
+            border-radius: var(--radius-cute);
+            padding: 18px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+            border: 1px solid #edf2f7;
         }
 
-        /* 柔和白底通用卡片 */
-        .white-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-        }
-
-        .white-card h3 { margin: 0 0 15px 0; font-size: 16px; font-weight: 700; }
+        .cute-card h3 { margin: 0 0 12px 0; font-size: 15px; font-weight: 800; }
 
         /* 表單元件 */
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 700; }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
-            padding: 14px;
-            border: 1px solid #e2e8f0;
+            padding: 11px 13px;
+            border: 2px solid #edf2f7;
+            border-radius: 14px;
+            font-size: 13px;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        input:focus, textarea:focus { border-color: var(--pinga-orange); }
+
+        .btn-pinga {
+            width: 100%;
+            padding: 12px;
+            border: none;
             border-radius: 16px;
             font-size: 14px;
-            background: #f8fafc;
-            color: var(--text-dark);
-            outline: none;
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 18px;
-            font-size: 15px;
-            font-weight: 700;
+            font-weight: 800;
             color: white;
             cursor: pointer;
-            background: linear-gradient(135deg, var(--coral-pink), #f43f5e);
-            box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
-            margin-top: 5px;
+            background: var(--pinga-orange);
+            box-shadow: 0 6px 16px rgba(255, 159, 67, 0.35);
         }
 
-        /* 水平滑動的分類卡片 (如同圖片右下角) */
-        .categories-scroll {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 5px;
+        /* 項目明細 */
+        .item-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border: 1.5px solid #e2e8f0;
         }
 
-        .category-box {
-            min-width: 110px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: var(--card-shadow);
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .category-box.active {
-            background: linear-gradient(135deg, #ff8a8a, #ff6b6b);
-            color: white;
-        }
-
-        .category-icon {
-            width: 36px; height: 36px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 8px auto;
-            font-size: 18px;
-        }
-
-        .category-box.active .category-icon { background: rgba(255,255,255,0.2); }
-
-        /* 明細列表項 */
-        .list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .list-item:last-child { border-bottom: none; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
 
         .badge-status {
             font-size: 11px;
             padding: 4px 10px;
             border-radius: 12px;
-            font-weight: 700;
+            font-weight: 800;
+            cursor: pointer;
         }
 
-        .badge-paid { background: #e0e7ff; color: #4338ca; }
-        .badge-unpaid { background: #ffe4e6; color: #e11d48; }
+        .badge-paid { background: #d1fae5; color: #065f46; }
+        .badge-unpaid { background: #fee2e2; color: #b91c1c; }
+
+        .appliance-note {
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #475569;
+            margin-top: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 上傳縮圖區 */
+        .attachment-box {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-upload-btn {
+            font-size: 11px;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 頂部列 -->
-    <div class="top-bar">
-        <div class="top-title">
-            <h2>My Budget</h2>
-            <p>裝潢與日常水管家</p>
+    <!-- 🐧 Pinga 吉祥物頂部 -->
+    <div class="pinga-header">
+        <div class="pinga-avatar-box">🐧</div>
+        <div class="pinga-dialogue">
+            Noot Noot! Pinga 幫妳把工程跟家電清單記清清楚楚！
         </div>
-        <div class="avatar">K</div>
     </div>
 
-    <!-- 莫蘭迪分段切換 -->
+    <!-- 頁籤切換 -->
     <div class="tab-switcher">
-        <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢水位</button>
-        <button class="tab-btn" onclick="switchTab('daily')">💸 日常記帳</button>
+        <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢工程款</button>
+        <button class="tab-btn" onclick="switchTab('appliance')">📺 傢俱與家電</button>
+        <button class="tab-btn" onclick="switchTab('daily')">💸 日常小記帳</button>
     </div>
 
-    <!-- ================= 裝潢專屬頁面 (預設) ================= -->
+    <!-- ================= 1. 裝潢工程頁面 ================= -->
     <div id="renovation-page">
-        
-        <!-- 卡片 1：懸浮主卡片 (預算現金水位) -->
-        <div class="credit-card-style">
-            <div class="card-label">RENOVATION WATER LEVEL</div>
-            <div class="card-amount" id="renov-water-level">$0</div>
-            
-            <div class="card-sub-grid">
-                <div class="card-sub-item">
-                    <span>總裝潢預算</span>
+        <div class="budget-overview-card">
+            <div class="budget-title">RENOVATION CASH LEVEL</div>
+            <div class="budget-amount" id="renov-water-level">$0</div>
+            <div class="sub-budget-grid">
+                <div class="sub-budget-box">
+                    <label>總裝潢預算</label>
                     <strong id="renov-total-budget">$0</strong>
                 </div>
-                <div class="card-sub-item">
-                    <span>已支付工程款</span>
-                    <strong id="renov-paid-total">$0</strong>
+                <div class="sub-budget-box">
+                    <label>已支付工程款</label>
+                    <strong id="renov-paid-total" style="color: #6ee7b7;">$0</strong>
                 </div>
             </div>
-        </div>
-
-        <!-- 卡片 2：深色趨勢圖卡片 (如圖片右側圖表) -->
-        <div class="dark-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; color: #94a3b8;">未支付工程款水位</span>
-                <strong style="color: #f43f5e;" id="renov-unpaid-total">$0</strong>
+            <div style="margin-top: 8px; font-size: 12px; color: #fca5a5;">
+                尚未支付尾款：<strong id="renov-unpaid-total">$0</strong>
             </div>
-            <!-- 平滑波浪圖表 -->
-            <canvas id="waterChart" height="110"></canvas>
         </div>
 
-        <!-- 橫向滑動卡片：設定與功能 -->
-        <div class="white-card">
-            <h3>⚙️ 快速設定</h3>
+        <div class="cute-card">
+            <h3>⚙️ 設定裝潢總預算</h3>
             <div class="form-group">
-                <label>設定裝潢總預算 (NTD)</label>
-                <input type="number" id="budget-input" placeholder="例：1500000">
+                <input type="number" id="budget-input" placeholder="請輸入總預算 (例: 1500000)">
             </div>
-            <button class="btn-action" style="background: linear-gradient(135deg, #7a63ff, #9333ea);" onclick="setTotalBudget()">更新總預算水位</button>
+            <button class="btn-pinga" style="background: var(--pinga-black);" onclick="setTotalBudget()">更新總預算</button>
         </div>
 
-        <!-- 新增裝潢工程卡片 -->
-        <div class="white-card">
-            <h3>🔨 新增裝潢 / 家電工程款</h3>
+        <div class="cute-card">
+            <h3>🔨 新增裝潢工程項目</h3>
             <div class="form-group">
                 <label>項目名稱</label>
-                <input type="text" id="renov-item-name" placeholder="例：第一期泥作、木工、冷氣">
+                <input type="text" id="renov-item-name" placeholder="例：第一期泥作、全屋系統櫃">
             </div>
             <div class="form-group">
-                <label>工程金額</label>
+                <label>金額 (NTD)</label>
                 <input type="number" id="renov-item-amount" placeholder="0">
             </div>
             <div class="form-group">
-                <label>支付狀態</label>
+                <label>付款狀態</label>
                 <select id="renov-item-status">
                     <option value="unpaid">尚未支付 ⏳</option>
                     <option value="paid">已支付 ✅</option>
                 </select>
             </div>
-            <button class="btn-action" onclick="addRenovationItem()">新增項目</button>
+            <button class="btn-pinga" onclick="addRenovationItem()">新增工程項目</button>
         </div>
 
-        <!-- 明細列表 -->
-        <div class="white-card">
-            <h3>📝 裝潢工程款明細</h3>
+        <div class="cute-card">
+            <h3>📝 裝潢明細與合約/收據夾檔</h3>
             <div id="renovation-list"></div>
         </div>
     </div>
 
-    <!-- ================= 日常記帳頁面 ================= -->
-    <div id="daily-page" style="display: none;">
-        <!-- 分類滾動卡片 (如同圖片右下) -->
-        <div style="margin-bottom: 15px;">
-            <div class="categories-scroll">
-                <div class="category-box active">
-                    <div class="category-icon">🚗</div>
-                    <div style="font-size: 12px; font-weight: bold;">Taxi</div>
-                    <div style="font-size: 11px; opacity: 0.8;">$870.45</div>
-                </div>
-                <div class="category-box">
-                    <div class="category-icon">🍔</div>
-                    <div style="font-size: 12px; font-weight: bold; color: var(--text-dark);">Food</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">$600.45</div>
-                </div>
-                <div class="category-box">
-                    <div class="category-icon">💊</div>
-                    <div style="font-size: 12px; font-weight: bold; color: var(--text-dark);">Health</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">$1100.50</div>
-                </div>
+    <!-- ================= 2. 傢俱家電預算與型號筆記頁面 ================= -->
+    <div id="appliance-page" style="display: none;">
+        <!-- 家電概況 -->
+        <div class="budget-overview-card" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+            <div class="budget-title" style="color: #7dd3fc;">FURNITURE & APPLIANCES</div>
+            <div class="budget-amount" id="appliance-paid-total">$0</div>
+            <div style="font-size: 12px; color: #bae6fd;">
+                預計選購總額：<strong id="appliance-planned-total" style="color:white;">$0</strong>
             </div>
         </div>
 
-        <div class="white-card">
-            <h3>➕ 快速記帳</h3>
+        <!-- 新增傢俱家電 -->
+        <div class="cute-card">
+            <h3>🛒 新增傢俱 / 家電願望清單</h3>
+            <div class="form-group">
+                <label>品項名稱</label>
+                <input type="text" id="app-name" placeholder="例：電視、滾筒洗衣機、沙發">
+            </div>
+            <div class="form-group">
+                <label>預估/實際價格 (NTD)</label>
+                <input type="number" id="app-price" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>型號與採購筆記 (品牌、尺寸、購買通路)</label>
+                <textarea id="app-note" rows="2" placeholder="例：Panasonic NA-V120，MOMO 折扣價 $28,900"></textarea>
+            </div>
+            <div class="form-group">
+                <label>購買狀態</label>
+                <select id="app-status">
+                    <option value="unpaid">預計採購/清單中 🛒</option>
+                    <option value="paid">已購買已付款 ✅</option>
+                </select>
+            </div>
+            <button class="btn-pinga" style="background: #0284c7;" onclick="addApplianceItem()">加入家電願望筆記</button>
+        </div>
+
+        <!-- 家電列表 -->
+        <div class="cute-card">
+            <h3>📺 傢俱家電選購與採購筆記</h3>
+            <div id="appliance-list"></div>
+        </div>
+    </div>
+
+    <!-- ================= 3. 日常記帳頁面 ================= -->
+    <div id="daily-page" style="display: none;">
+        <div class="cute-card">
+            <h3>➕ 日常記帳</h3>
             <div class="form-group">
                 <label>類型</label>
                 <select id="daily-type">
@@ -353,57 +342,59 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>消費項目</label>
-                <input type="text" id="daily-name" placeholder="例：午餐、計程車">
+                <label>項目名稱</label>
+                <input type="text" id="daily-name" placeholder="例：晚餐、咖啡">
             </div>
             <div class="form-group">
                 <label>金額</label>
                 <input type="number" id="daily-amount" placeholder="0">
             </div>
-            <button class="btn-action" onclick="addDailyRecord()">儲存紀錄</button>
+            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來</button>
         </div>
 
-        <div class="white-card">
-            <h3>Recent Expenses</h3>
+        <div class="cute-card">
+            <h3>📋 收支記錄</h3>
             <div id="daily-list"></div>
         </div>
     </div>
 
 <script>
-    // 資料本地儲存
-    let state = JSON.parse(localStorage.getItem('beauty_budget_app')) || {
+    let state = JSON.parse(localStorage.getItem('pinga_budget_v2')) || {
         daily: [],
-        renovationBudget: 1200000,
-        renovationItems: [
-            { id: 1, name: "設計費與監工", amount: 120000, status: "paid" },
-            { id: 2, name: "第一期泥作拆除", amount: 250000, status: "paid" },
-            { id: 3, name: "全屋木工與系統櫃", amount: 480000, status: "unpaid" }
+        renovationBudget: 1500000,
+        renovationItems: [],
+        applianceItems: [
+            { id: 1, name: "滾筒洗衣機", price: 35000, note: "Panasonic NA-V120 12kg (全國電子詢價)", status: "unpaid", attachment: null },
+            { id: 2, name: "客廳 L 型沙發", price: 45000, note: "莫蘭迪灰防刮貓抓皮", status: "paid", attachment: null }
         ]
     };
 
-    let chartInstance = null;
-
     function saveData() {
-        localStorage.setItem('beauty_budget_app', JSON.stringify(state));
+        localStorage.setItem('pinga_budget_v2', JSON.stringify(state));
         render();
     }
 
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('renovation-page').style.display = 'none';
+        document.getElementById('appliance-page').style.display = 'none';
+        document.getElementById('daily-page').style.display = 'none';
+
         if (tab === 'renovation') {
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
             document.getElementById('renovation-page').style.display = 'block';
-            document.getElementById('daily-page').style.display = 'none';
-        } else {
+        } else if (tab === 'appliance') {
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.getElementById('renovation-page').style.display = 'none';
+            document.getElementById('appliance-page').style.display = 'block';
+        } else {
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
             document.getElementById('daily-page').style.display = 'block';
         }
     }
 
     function setTotalBudget() {
         const budget = parseFloat(document.getElementById('budget-input').value);
-        if (isNaN(budget)) return alert('請輸入有效預算金額');
+        if (isNaN(budget)) return alert('請輸入有效預算');
         state.renovationBudget = budget;
         document.getElementById('budget-input').value = '';
         saveData();
@@ -414,20 +405,52 @@
         const amount = parseFloat(document.getElementById('renov-item-amount').value);
         const status = document.getElementById('renov-item-status').value;
 
-        if (!name || isNaN(amount)) return alert('請填寫完整名稱與金額');
+        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
 
-        state.renovationItems.unshift({ id: Date.now(), name, amount, status });
+        state.renovationItems.unshift({ id: Date.now(), name, amount, status, attachment: null });
         document.getElementById('renov-item-name').value = '';
         document.getElementById('renov-item-amount').value = '';
         saveData();
     }
 
-    function toggleStatus(id) {
-        const item = state.renovationItems.find(i => i.id === id);
+    function addApplianceItem() {
+        const name = document.getElementById('app-name').value.trim();
+        const price = parseFloat(document.getElementById('app-price').value);
+        const note = document.getElementById('app-note').value.trim();
+        const status = document.getElementById('app-status').value;
+
+        if (!name || isNaN(price)) return alert('請填寫品項名稱與金額');
+
+        state.applianceItems.unshift({ id: Date.now(), name, price, note, status, attachment: null });
+        document.getElementById('app-name').value = '';
+        document.getElementById('app-price').value = '';
+        document.getElementById('app-note').value = '';
+        saveData();
+    }
+
+    function toggleStatus(type, id) {
+        const list = type === 'renov' ? state.renovationItems : state.applianceItems;
+        const item = list.find(i => i.id === id);
         if (item) {
             item.status = item.status === 'paid' ? 'unpaid' : 'paid';
             saveData();
         }
+    }
+
+    function uploadFile(type, id, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const list = type === 'renov' ? state.renovationItems : state.applianceItems;
+            const item = list.find(i => i.id === id);
+            if (item) {
+                item.attachment = { name: file.name, data: e.target.result, isImage: file.type.startsWith('image/') };
+                saveData();
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
     function addDailyRecord() {
@@ -444,82 +467,91 @@
     }
 
     function render() {
-        // 計算金額
-        let paidTotal = 0;
-        let unpaidTotal = 0;
-
+        // 1. 計算裝潢
+        let paidTotal = 0, unpaidTotal = 0;
         state.renovationItems.forEach(i => {
             if (i.status === 'paid') paidTotal += i.amount;
             else unpaidTotal += i.amount;
         });
 
-        const waterLevel = state.renovationBudget - paidTotal;
-
-        document.getElementById('renov-water-level').innerText = `$${waterLevel.toLocaleString()}`;
+        document.getElementById('renov-water-level').innerText = `$${(state.renovationBudget - paidTotal).toLocaleString()}`;
         document.getElementById('renov-total-budget').innerText = `$${state.renovationBudget.toLocaleString()}`;
         document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
         document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
 
         // 渲染裝潢列表
-        const renovList = document.getElementById('renovation-list');
-        renovList.innerHTML = state.renovationItems.map(item => `
-            <div class="list-item" onclick="toggleStatus(${item.id})">
-                <div>
-                    <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top:2px;">點擊快速切換狀態</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-weight: 800; font-size: 15px;">$${item.amount.toLocaleString()}</div>
-                    <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}">
+        document.getElementById('renovation-list').innerHTML = state.renovationItems.map(item => `
+            <div class="item-card">
+                <div class="item-header">
+                    <div>
+                        <div style="font-weight: 800; font-size: 14px;">${item.name}</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #2563eb; margin-top:2px;">$${item.amount.toLocaleString()}</div>
+                    </div>
+                    <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}" onclick="toggleStatus('renov', ${item.id})">
                         ${item.status === 'paid' ? '已支付 ✅' : '未支付 ⏳'}
                     </span>
+                </div>
+                <div class="attachment-box">
+                    ${item.attachment ? `
+                        <div class="attachment-preview">
+                            ${item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank"><img src="${item.attachment.data}" style="width:45px;height:45px;border-radius:8px;object-fit:cover;"></a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}">📄 ${item.attachment.name}</a>`}
+                        </div>` : `<span style="font-size: 11px; color: #94a3b8;">無附件</span>`}
+                    <label class="file-upload-btn">
+                        📎 ${item.attachment ? '換收據' : '上傳收據/合約'}
+                        <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('renov', ${item.id}, this)">
+                    </label>
                 </div>
             </div>
         `).join('');
 
-        // 渲染日常紀錄
-        const dailyList = document.getElementById('daily-list');
-        dailyList.innerHTML = state.daily.map(item => `
-            <div class="list-item">
+        // 2. 計算家電
+        let appPaid = 0, appPlanned = 0;
+        state.applianceItems.forEach(i => {
+            appPlanned += i.price;
+            if (i.status === 'paid') appPaid += i.price;
+        });
+
+        document.getElementById('appliance-paid-total').innerText = `$${appPaid.toLocaleString()}`;
+        document.getElementById('appliance-planned-total').innerText = `$${appPlanned.toLocaleString()}`;
+
+        // 渲染家電列表
+        document.getElementById('appliance-list').innerHTML = state.applianceItems.map(item => `
+            <div class="item-card">
+                <div class="item-header">
+                    <div>
+                        <div style="font-weight: 800; font-size: 14px;">${item.name}</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #0284c7; margin-top:2px;">$${item.price.toLocaleString()}</div>
+                    </div>
+                    <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}" onclick="toggleStatus('appliance', ${item.id})">
+                        ${item.status === 'paid' ? '已購買 ✅' : '願望中 🛒'}
+                    </span>
+                </div>
+                ${item.note ? `<div class="appliance-note">📌 筆記/型號：${item.note}</div>` : ''}
+                <div class="attachment-box">
+                    ${item.attachment ? `
+                        <div class="attachment-preview">
+                            ${item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank"><img src="${item.attachment.data}" style="width:45px;height:45px;border-radius:8px;object-fit:cover;"></a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}">📄 ${item.attachment.name}</a>`}
+                        </div>` : `<span style="font-size: 11px; color: #94a3b8;">無發票/保固卡照片</span>`}
+                    <label class="file-upload-btn">
+                        📎 ${item.attachment ? '換相片' : '上傳保固/發票照片'}
+                        <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('appliance', ${item.id}, this)">
+                    </label>
+                </div>
+            </div>
+        `).join('');
+
+        // 3. 日常記帳
+        document.getElementById('daily-list').innerHTML = state.daily.map(item => `
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
                 <div>
                     <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${item.date}</div>
+                    <div style="font-size: 11px; color: #94a3b8;">${item.date}</div>
                 </div>
-                <div style="font-weight: 800; font-size: 15px; color: ${item.type === 'income' ? '#10b981' : '#f43f5e'}">
+                <div style="font-weight: 800; font-size: 15px; color: ${item.type === 'income' ? '#10b981' : '#ef4444'}">
                     ${item.type === 'income' ? '+' : '-'} $${item.amount.toLocaleString()}
                 </div>
             </div>
         `).join('');
-
-        // 渲染流線波浪圖表 (Chart.js)
-        renderChart(paidTotal, unpaidTotal, waterLevel);
-    }
-
-    function renderChart(paid, unpaid, water) {
-        const ctx = document.getElementById('waterChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['總預算', '已支付', '未支付', '剩餘水位'],
-                datasets: [{
-                    data: [state.renovationBudget, paid, unpaid, water],
-                    borderColor: '#ff8a8a',
-                    borderWidth: 3,
-                    tension: 0.4, // 圓滑曲線
-                    fill: true,
-                    backgroundColor: 'rgba(255, 138, 138, 0.15)'
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
-                    y: { display: false }
-                }
-            }
-        });
     }
 
     render();
