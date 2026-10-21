@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinga 雙人共同記帳管家</title>
+    <title>Pinga 裝潢與家電管家</title>
     
     <!-- iOS PWA Meta 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -53,7 +53,7 @@
         }
 
         .pinga-avatar-img {
-            height: 80px;
+            height: 85px;
             width: auto;
             object-fit: contain;
             flex-shrink: 0;
@@ -69,12 +69,13 @@
 
         .pinga-dialogue {
             background: #ffffff;
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 18px;
             font-size: 13px;
             font-weight: 800;
             color: #2c3e50;
             border: 2px solid #feca57;
+            box-shadow: 0 4px 10px rgba(254, 202, 87, 0.2);
             flex: 1;
         }
 
@@ -93,13 +94,17 @@
         }
 
         .room-input {
-            border: 1px solid #dcdde1;
+            border: 1.5px solid #dcdde1;
             padding: 6px 10px;
             border-radius: 12px;
-            width: 130px;
+            width: 140px;
             font-size: 12px;
             font-weight: bold;
+            outline: none;
+            background: #f8f9fa;
         }
+
+        .room-input:focus { border-color: var(--pinga-orange); }
 
         /* 分頁切換 */
         .tab-switcher {
@@ -269,9 +274,9 @@
 
     <!-- 🐧 Pinga 吉祥物 Header -->
     <div class="pinga-header">
-        <img src="https://static.wikia.nocookie.net/pingu/images/3/30/Pinga_flower.png" alt="Pinga" class="pinga-avatar-img" onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/609/609803.png';">
+        <img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f427.png" id="pinga-main-img" alt="Pinga" class="pinga-avatar-img">
         <div class="pinga-dialogue" id="pinga-say">
-            Noot Noot! Pinga 支援雙人同步記帳囉！🌸
+            Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
         </div>
     </div>
 
@@ -411,7 +416,16 @@
     </div>
 
 <script>
-    // 免費公共同步 Firebase 展示庫 (免註冊即用)
+    // 自動載入穩定 Pinga 小花照片
+    const pingaImgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/SVG_Penguin.svg/800px-SVG_Penguin.svg.png";
+    
+    // 設定高解析度 Pinga 圖片
+    const imgEl = document.getElementById('pinga-main-img');
+    const photoImg = new Image();
+    photoImg.src = "https://static.wikia.nocookie.net/pingu/images/3/30/Pinga_flower.png";
+    photoImg.onload = function() { imgEl.src = photoImg.src; };
+
+    // 免費 Firebase 公共雲端庫
     const firebaseConfig = {
         apiKey: "AIzaSyD-demo-pinga-key",
         authDomain: "pinga-renovation.firebaseapp.com",
@@ -425,7 +439,7 @@
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
-    } catch(e) { console.log('Firebase init fallbacks'); }
+    } catch(e) { console.log('Firebase fallback'); }
 
     let currentRoom = localStorage.getItem('pinga_room_id') || 'our-sweet-home';
     document.getElementById('room-id-input').value = currentRoom;
@@ -437,6 +451,12 @@
         applianceItems: []
     };
 
+    const pingaQuotes = {
+        renovation: "Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸",
+        appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
+        daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
+    };
+
     function listenToRoomData() {
         if (!db) return loadLocalBackup();
         
@@ -446,7 +466,6 @@
                     state = doc.data();
                     render();
                 } else {
-                    // 初始化預設資料
                     state = {
                         daily: [],
                         renovationBudget: 1500000,
@@ -488,6 +507,8 @@
         document.getElementById('renovation-page').style.display = 'none';
         document.getElementById('appliance-page').style.display = 'none';
         document.getElementById('daily-page').style.display = 'none';
+
+        document.getElementById('pinga-say').innerText = pingaQuotes[tab];
 
         if (tab === 'renovation') {
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
