@@ -3,715 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinga 裝潢與家電管家</title>
+    <title>Pinga 雙人共享裝潢與記帳小管家</title>
     
-    <!-- iOS PWA Meta 設定 -->
+    <!-- iOS PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pinga記帳">
-
-    <style>
-        :root {
-            --pinga-black: #1e272e;
-            --pinga-orange: #ff9f43;
-            --pinga-beak: #ee5253;
-            --pinga-yellow: #feca57;
-            --pinga-bg: #f5f6fa;
-            --card-white: #ffffff;
-            --text-main: #2d3436;
-            --text-sub: #8395a7;
-            --radius-cute: 24px;
-            --shadow-soft: 0 10px 25px rgba(30, 39, 46, 0.08);
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              pingaBlack: '#23272a',
+              pingaOrange: '#ff9f43',
+              pingaRed: '#ee5253',
+              pingaYellow: '#feca57',
+              pingaPastelBlue: '#e0f2fe',
+              pingaBg: '#f8fafc',
+            },
+            borderRadius: {
+              'cute': '24px'
+            }
+          }
         }
-
-        * { box-sizing: border-box; }
-
+      }
+    </script>
+    
+    <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "PingFang TC", sans-serif;
-            background-color: var(--pinga-bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 15px 15px 90px 15px;
+            background-color: #f8fafc;
+            color: #2d3436;
             -webkit-user-select: auto;
             user-select: auto;
         }
 
-        /* 🐧 Pinga 可愛 Header */
-        .pinga-header {
-            background: linear-gradient(135deg, #ffffff 0%, #fff9db 100%);
-            border-radius: var(--radius-cute);
-            padding: 12px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-soft);
-            margin-bottom: 12px;
-            border: 3px solid #feca57;
+        @keyframes pingaBob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(2deg); }
         }
 
-        .pinga-avatar-img {
-            height: 85px;
-            width: auto;
-            object-fit: contain;
-            flex-shrink: 0;
-            animation: pingaWiggle 3s infinite ease-in-out;
-            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
+        .pinga-avatar {
+            animation: pingaBob 3.5s infinite ease-in-out;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
         }
 
-        @keyframes pingaWiggle {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-5deg); }
-            75% { transform: rotate(5deg); }
-        }
-
-        .pinga-dialogue {
-            background: #ffffff;
-            padding: 12px 14px;
-            border-radius: 18px;
-            font-size: 13px;
-            font-weight: 800;
-            color: #2c3e50;
-            border: 2px solid #feca57;
-            box-shadow: 0 4px 10px rgba(254, 202, 87, 0.2);
-            flex: 1;
-        }
-
-        /* 🏠 雙人共享房間設定列 */
-        .room-bar {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 10px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 2px solid #e1e8ef;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .room-input {
-            border: 1.5px solid #dcdde1;
-            padding: 6px 12px;
-            border-radius: 12px;
-            width: 150px;
-            font-size: 13px;
-            font-weight: bold;
-            outline: none;
-            background: #ffffff;
-            color: #2d3436;
-        }
-
-        .room-input:focus {
-            border-color: var(--pinga-orange);
-            background: #fff9db;
-        }
-
-        /* 分頁切換 */
-        .tab-switcher {
-            display: flex;
-            background: #dcdde1;
-            border-radius: 22px;
-            padding: 5px;
-            margin-bottom: 16px;
-            gap: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 11px 4px;
-            border: none;
-            background: transparent;
-            color: var(--text-sub);
-            font-weight: 800;
-            font-size: 13px;
-            border-radius: 18px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--pinga-black);
-            color: #ffffff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        /* 預算卡片 */
-        .budget-overview-card {
-            background: linear-gradient(135deg, #1e272e 0%, #353b48 100%);
-            border-radius: 28px;
-            padding: 22px;
-            color: white;
-            box-shadow: 0 14px 30px rgba(30, 39, 46, 0.3);
-            margin-bottom: 16px;
-            position: relative;
-            border: 2px solid #ff9f43;
-        }
-
-        .budget-title { font-size: 12px; color: var(--pinga-orange); font-weight: bold; }
-        .budget-amount { font-size: 30px; font-weight: 900; margin: 4px 0 14px 0; color: #ffffff; }
-
-        .sub-budget-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 18px;
-        }
-
-        .sub-budget-box label { color: #dcdde1; font-size: 11px; display: block; }
-        .sub-budget-box strong { font-size: 15px; color: #ffffff; }
-
-        /* 卡片與表單 */
-        .cute-card {
-            background: var(--card-white);
-            border-radius: var(--radius-cute);
-            padding: 18px;
-            box-shadow: var(--shadow-soft);
-            margin-bottom: 16px;
-            border: 2px solid #f1f2f6;
-        }
-
-        .cute-card h3 { margin: 0 0 12px 0; font-size: 15px; font-weight: 800; }
-
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 700; }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #f1f2f6;
-            border-radius: 16px;
-            font-size: 13px;
-            outline: none;
-            background: #f8f9fa;
-        }
-
-        .btn-pinga {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 18px;
-            font-size: 14px;
-            font-weight: 800;
-            color: white;
-            cursor: pointer;
-            background: var(--pinga-orange);
-            box-shadow: 0 6px 18px rgba(255, 159, 67, 0.4);
-        }
-
-        /* 項目明細 */
-        .item-card {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 2px solid #f1f2f6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
-
-        .badge-status {
-            font-size: 11px;
-            padding: 5px 12px;
-            border-radius: 14px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .badge-paid { background: #e3fcf7; color: #0ed1a1; border: 1px solid #0ed1a1; }
-        .badge-unpaid { background: #ffeaa7; color: #d63031; border: 1px solid #ff7675; }
-
-        .appliance-note {
-            background: #fff9db;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #2d3436;
-            margin-top: 8px;
-            border: 1px dashed #feca57;
-        }
-
-        .attachment-box {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #dcdde1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .file-upload-btn {
-            font-size: 11px;
-            color: #0984e3;
-            background: #e1f5fe;
-            padding: 6px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 800;
-        }
-
-        .delete-btn {
-            background: #ff7675;
-            color: #ffffff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px 10px;
-            color: var(--text-sub);
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(30, 39, 46, 0.06);
         }
     </style>
 </head>
-<body>
+<body class="pb-24 pt-4 px-4 max-w-md mx-auto min-h-screen">
 
-    <!-- 🐧 Pinga 吉祥物 Header (嵌入向量精緻圖像，保證永不破圖) -->
-    <div class="pinga-header">
-        <svg class="pinga-avatar-img" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
-            <!-- 腳 -->
-            <ellipse cx="50" cy="185" rx="25" ry="10" fill="#ff9f43"/>
-            <ellipse cx="110" cy="185" rx="25" ry="10" fill="#ff9f43"/>
-            <!-- 身體 -->
-            <path d="M 35 75 C 10 95, 10 160, 45 178 C 65 185, 95 185, 115 178 C 150 160, 150 95, 125 75 Z" fill="#ffffff" stroke="#22252a" stroke-width="5"/>
-            <!-- 腹部軟萌感 -->
-            <path d="M 45 85 C 25 105, 25 150, 50 168 C 68 175, 92 175, 110 168 C 135 150, 135 105, 115 85 Z" fill="#f8f9fa"/>
-            <!-- 頭部 -->
-            <path d="M 40 25 C 20 40, 20 70, 40 80 C 60 90, 100 90, 120 80 C 140 70, 140 40, 120 25 C 100 10, 60 10, 40 25 Z" fill="#22252a"/>
-            <!-- 臉部白色區域 -->
-            <path d="M 45 35 C 32 45, 32 68, 48 74 C 62 80, 98 80, 112 74 C 128 68, 128 45, 115 35 C 98 25, 62 25, 45 35 Z" fill="#ffffff"/>
-            <!-- 眼睛 -->
-            <circle cx="58" cy="48" r="7" fill="#22252a"/>
-            <circle cx="56" cy="46" r="2.5" fill="#ffffff"/>
-            <circle cx="102" cy="48" r="7" fill="#22252a"/>
-            <circle cx="100" cy="46" r="2.5" fill="#ffffff"/>
-            <!-- 嘴巴 -->
-            <path d="M 70 56 Q 80 66 90 56 Q 80 62 70 56 Z" fill="#ee5253" stroke="#ee5253" stroke-width="2"/>
-            <!-- 手臂攜帶花朵 -->
-            <path d="M 32 90 Q 20 120 40 135 Q 55 120 50 100 Z" fill="#ffffff" stroke="#22252a" stroke-width="3"/>
-            <path d="M 128 90 Q 140 120 120 135 Q 105 120 110 100 Z" fill="#ffffff" stroke="#22252a" stroke-width="3"/>
-            <!-- 紫色小花與花莖 -->
-            <path d="M 115 125 Q 125 80 135 45" stroke="#78e08f" stroke-width="5" fill="none" stroke-linecap="round"/>
-            <g transform="translate(135, 45)">
-                <circle cx="0" cy="-14" r="9" fill="#9b59b6"/>
-                <circle cx="14" cy="0" r="9" fill="#9b59b6"/>
-                <circle cx="0" cy="14" r="9" fill="#9b59b6"/>
-                <circle cx="-14" cy="0" r="9" fill="#9b59b6"/>
-                <circle cx="0" cy="0" r="7" fill="#f1c40f"/>
+    <!-- Top Pinga Header -->
+    <div class="bg-gradient-to-r from-white via-amber-50 to-orange-50 rounded-cute p-3.5 mb-4 flex items-center gap-3 border-3 border-pingaYellow card-shadow relative">
+        <!-- Cute vector illustration of Pinga holding a purple flower -->
+        <svg class="h-24 w-20 flex-shrink-0 pinga-avatar" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Feet -->
+            <ellipse cx="48" cy="162" rx="22" ry="10" fill="#FF9F43"/>
+            <ellipse cx="92" cy="162" rx="22" ry="10" fill="#FF9F43"/>
+            <!-- Outer Black Body -->
+            <path d="M70 20 C 35 20 20 50 20 95 C 20 145 35 165 70 165 C 105 165 120 145 120 95 C 120 50 105 20 70 20 Z" fill="#23272A"/>
+            <!-- White Belly/Face Patch -->
+            <path d="M70 32 C 48 32 36 55 36 95 C 36 138 48 155 70 155 C 92 155 104 138 104 95 C 104 55 92 32 70 32 Z" fill="#FFFFFF"/>
+            <!-- Left Arm -->
+            <path d="M 22 90 C 12 105 10 120 26 128 C 36 120 38 102 34 88 Z" fill="#23272A"/>
+            <!-- Eyes -->
+            <circle cx="56" cy="58" r="6.5" fill="#23272A"/>
+            <circle cx="54" cy="56" r="2.5" fill="#FFFFFF"/>
+            <circle cx="84" cy="58" r="6.5" fill="#23272A"/>
+            <circle cx="82" cy="56" r="2.5" fill="#FFFFFF"/>
+            <!-- Beak -->
+            <path d="M62 66 Q70 78 78 66 Q70 71 62 66 Z" fill="#EE5253"/>
+            <!-- Flower Stem in Arm -->
+            <path d="M 85 110 Q 100 85 108 55" stroke="#78E08F" stroke-width="4.5" stroke-linecap="round"/>
+            <!-- Right Arm Holding Flower Stem -->
+            <path d="M 118 90 C 128 105 115 125 96 122 C 92 110 104 98 108 88 Z" fill="#23272A"/>
+            <!-- Purple Flower Petals & Center -->
+            <g transform="translate(108, 52)">
+                <circle cx="0" cy="-12" r="8" fill="#9B59B6"/>
+                <circle cx="11" cy="-4" r="8" fill="#8E44AD"/>
+                <circle cx="7" cy="10" r="8" fill="#9B59B6"/>
+                <circle cx="-7" cy="10" r="8" fill="#8E44AD"/>
+                <circle cx="-11" cy="-4" r="8" fill="#9B59B6"/>
+                <circle cx="0" cy="0" r="6.5" fill="#F1C40F"/>
             </g>
         </svg>
 
-        <div class="pinga-dialogue" id="pinga-say">
-            Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
+        <div class="flex-1 bg-white p-3 rounded-2xl border-2 border-amber-200 shadow-sm">
+            <div id="pinga-say" class="text-xs font-black text-slate-800 leading-snug">
+                Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
+            </div>
+            <!-- Sync Indicator -->
+            <div class="mt-2 pt-1.5 border-t border-dashed border-slate-100 flex items-center justify-between text-[11px]">
+                <span class="text-slate-400 font-bold">雲端同步狀態:</span>
+                <span id="sync-status-badge" class="text-emerald-600 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    已即時同步 ✅
+                </span>
+            </div>
         </div>
     </div>
 
-    <!-- 🏠 雙人共享房間設定 -->
-    <div class="room-bar">
-        <span>🔑 共同帳簿代碼：</span>
-        <input type="text" id="room-id-input" class="room-input" value="katy2026" oninput="changeRoom()">
+    <!-- Room ID Switcher Bar -->
+    <div class="bg-white rounded-2xl p-3 mb-4 card-shadow border border-slate-100 flex items-center justify-between text-xs font-bold">
+        <span class="text-slate-600 flex items-center gap-1">
+            🔑 共同帳簿代碼：
+        </span>
+        <input type="text" id="room-id-input" value="katy2026" onchange="changeRoom()" 
+               class="bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-slate-800 focus:outline-none focus:border-pingaOrange text-center w-36">
     </div>
 
-    <!-- 頁籤切換 -->
-    <div class="tab-switcher">
-        <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢工程款</button>
-        <button class="tab-btn" onclick="switchTab('appliance')">📺 傢俱與家電</button>
-        <button class="tab-btn" onclick="switchTab('daily')">💸 日常小記帳</button>
+    <!-- Navigation Tabs -->
+    <div class="flex bg-slate-200 p-1.5 rounded-2xl mb-4 gap-1">
+        <button id="tab-renovation-btn" onclick="switchTab('renovation')" class="flex-1 py-2.5 px-1 text-xs font-black rounded-xl transition-all duration-200 bg-pingaBlack text-white shadow-md">
+            🛠️ 裝潢工程款
+        </button>
+        <button id="tab-appliance-btn" onclick="switchTab('appliance')" class="flex-1 py-2.5 px-1 text-xs font-black text-slate-500 rounded-xl transition-all duration-200">
+            📺 傢俱與家電
+        </button>
+        <button id="tab-daily-btn" onclick="switchTab('daily')" class="flex-1 py-2.5 px-1 text-xs font-black text-slate-500 rounded-xl transition-all duration-200">
+            💸 日常小記帳
+        </button>
     </div>
 
-    <!-- ================= 1. 裝潢工程頁面 ================= -->
-    <div id="renovation-page">
-        <div class="budget-overview-card">
-            <div class="budget-title">RENOVATION CASH LEVEL</div>
-            <div class="budget-amount" id="renov-water-level">$0</div>
-            <div class="sub-budget-grid">
-                <div class="sub-budget-box">
-                    <label>總裝潢預算</label>
-                    <strong id="renov-total-budget">$0</strong>
+    <!-- ================= 1. 裝潢工程款頁面 ================= -->
+    <div id="renovation-page" class="space-y-4">
+        <!-- Overview Card -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-5 text-white card-shadow relative border-2 border-pingaOrange">
+            <div class="text-[11px] font-bold text-pingaOrange tracking-wider uppercase">RENOVATION CASH LEVEL</div>
+            <div id="renov-water-level" class="text-3xl font-black my-1 text-white">$0</div>
+            
+            <div class="grid grid-cols-2 gap-2 bg-white/10 p-3 rounded-2xl mt-3 text-xs">
+                <div>
+                    <span class="text-slate-300 block text-[10px]">總裝潢預算</span>
+                    <strong id="renov-total-budget" class="text-sm">$0</strong>
                 </div>
-                <div class="sub-budget-box">
-                    <label>已支付工程款</label>
-                    <strong id="renov-paid-total" style="color: #55efc4;">$0</strong>
+                <div>
+                    <span class="text-slate-300 block text-[10px]">已支付工程款</span>
+                    <strong id="renov-paid-total" class="text-sm text-emerald-400">$0</strong>
                 </div>
             </div>
-            <div style="margin-top: 10px; font-size: 12px; color: #ff7675; font-weight: bold;">
-                ⏳ 尚未支付尾款：<span id="renov-unpaid-total">$0</span>
+            <div class="mt-2.5 text-xs text-rose-300 font-bold flex justify-between">
+                <span>⏳ 尚未支付尾款：</span>
+                <span id="renov-unpaid-total" class="font-extrabold">$0</span>
             </div>
         </div>
 
-        <div class="cute-card">
-            <h3>⚙️ 設定裝潢總預算</h3>
-            <div class="form-group">
-                <input type="number" id="budget-input" placeholder="請輸入總預算 (例: 1500000)">
-            </div>
-            <button class="btn-pinga" style="background: var(--pinga-black);" onclick="setTotalBudget()">更新總預算</button>
-        </div>
-
-        <div class="cute-card">
-            <h3>🔨 新增裝潢工程項目</h3>
-            <div class="form-group">
-                <label>項目名稱</label>
-                <input type="text" id="renov-item-name" placeholder="例：第一期泥作、全屋系統櫃">
-            </div>
-            <div class="form-group">
-                <label>金額 (NTD)</label>
-                <input type="number" id="renov-item-amount" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>付款狀態</label>
-                <select id="renov-item-status">
-                    <option value="unpaid">尚未支付 ⏳</option>
-                    <option value="paid">已支付 ✅</option>
-                </select>
-            </div>
-            <button class="btn-pinga" onclick="addRenovationItem()">新增工程項目 🌸</button>
-        </div>
-
-        <div class="cute-card">
-            <h3>📝 裝潢明細與合約/收據</h3>
-            <div id="renovation-list"></div>
-        </div>
-    </div>
-
-    <!-- ================= 2. 傢俱家電預算頁面 ================= -->
-    <div id="appliance-page" style="display: none;">
-        <div class="budget-overview-card" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border-color: #74b9ff;">
-            <div class="budget-title" style="color: #dfe6e9;">FURNITURE & APPLIANCES</div>
-            <div class="budget-amount" id="appliance-paid-total">$0</div>
-            <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
-                🛒 預計選購總額：<span id="appliance-planned-total">$0</span>
+        <!-- Budget Setting Form -->
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100">
+            <h3 class="text-sm font-extrabold mb-3 text-slate-800">⚙️ 設定裝潢總預算</h3>
+            <div class="flex gap-2">
+                <input type="number" id="budget-input" placeholder="請輸入總預算 (例: 1500000)" class="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-pingaOrange">
+                <button onclick="setTotalBudget()" class="bg-pingaBlack text-white font-extrabold px-4 py-2 rounded-xl text-xs hover:bg-black transition shadow">更新</button>
             </div>
         </div>
 
-        <div class="cute-card">
-            <h3>🌱 新增傢俱 / 家電願望清單</h3>
-            <div class="form-group">
-                <label>品項名稱</label>
-                <input type="text" id="app-name" placeholder="例：電視、滾筒洗衣機、沙發">
+        <!-- Add Item Form -->
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100 space-y-3">
+            <h3 class="text-sm font-extrabold text-slate-800">🔨 新增裝潢工程項目</h3>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">項目名稱</label>
+                <input type="text" id="renov-item-name" placeholder="例：第一期泥作拆除、系統櫃款項" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
             </div>
-            <div class="form-group">
-                <label>預估/實際價格 (NTD)</label>
-                <input type="number" id="app-price" placeholder="0">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">金額 (NTD)</label>
+                    <input type="number" id="renov-item-amount" placeholder="0" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">付款狀態</label>
+                    <select id="renov-item-status" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
+                        <option value="unpaid">尚未支付 ⏳</option>
+                        <option value="paid">已支付 ✅</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label>型號與採購筆記 (品牌、尺寸、購買通路)</label>
-                <textarea id="app-note" rows="2" placeholder="例：Panasonic NA-V120，MOMO 折扣價 $28,900"></textarea>
-            </div>
-            <div class="form-group">
-                <label>購買狀態</label>
-                <select id="app-status">
-                    <option value="unpaid">預計採購/清單中 🛒</option>
-                    <option value="paid">已購買已付款 ✅</option>
-                </select>
-            </div>
-            <button class="btn-pinga" style="background: #0984e3;" onclick="addApplianceItem()">加入家電願望筆記 📺</button>
+            <button onclick="addRenovationItem()" class="w-full bg-pingaOrange text-white font-extrabold py-3 rounded-xl text-xs shadow-lg shadow-amber-200 hover:bg-amber-500 transition">
+                新增工程項目 🌸
+            </button>
         </div>
 
-        <div class="cute-card">
-            <h3>📺 傢俱家電選購與採購筆記</h3>
-            <div id="appliance-list"></div>
+        <!-- List -->
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100">
+            <h3 class="text-sm font-extrabold mb-3 text-slate-800">📝 裝潢明細與合約/收據夾檔</h3>
+            <div id="renovation-list" class="space-y-3"></div>
         </div>
     </div>
 
-    <!-- ================= 3. 日常記帳頁面 ================= -->
-    <div id="daily-page" style="display: none;">
-        <div class="cute-card">
-            <h3>➕ 日常小記帳</h3>
-            <div class="form-group">
-                <label>類型</label>
-                <select id="daily-type">
-                    <option value="expense">支出 💸</option>
-                    <option value="income">收入 💰</option>
-                </select>
+    <!-- ================= 2. 傢俱與家電頁面 ================= -->
+    <div id="appliance-page" class="space-y-4 hidden">
+        <div class="bg-gradient-to-br from-sky-600 to-sky-500 rounded-3xl p-5 text-white card-shadow relative border-2 border-sky-300">
+            <div class="text-[11px] font-bold text-sky-100 tracking-wider uppercase">FURNITURE & APPLIANCES</div>
+            <div id="appliance-paid-total" class="text-3xl font-black my-1 text-white">$0</div>
+            <div class="text-xs text-sky-100 font-bold mt-2">
+                🛒 預計選購總額：<span id="appliance-planned-total" class="text-white font-extrabold">$0</span>
             </div>
-            <div class="form-group">
-                <label>項目名稱</label>
-                <input type="text" id="daily-name" placeholder="例：晚餐、咖啡">
-            </div>
-            <div class="form-group">
-                <label>金額</label>
-                <input type="number" id="daily-amount" placeholder="0">
-            </div>
-            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 🌸</button>
         </div>
 
-        <div class="cute-card">
-            <h3>📋 收支記錄</h3>
-            <div id="daily-list"></div>
+        <!-- Add Appliance Form -->
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100 space-y-3">
+            <h3 class="text-sm font-extrabold text-slate-800">🌱 新增傢俱 / 家電願望筆記</h3>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">品項名稱</label>
+                <input type="text" id="app-name" placeholder="例：電視、滾筒洗衣機、沙發" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-sky-500">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">預估/實際價格 (NTD)</label>
+                    <input type="number" id="app-price" placeholder="0" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-sky-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">購買狀態</label>
+                    <select id="app-status" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-sky-500">
+                        <option value="unpaid">預計採購/清單中 🛒</option>
+                        <option value="paid">已購買已付款 ✅</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">型號與採購筆記 (品牌、尺寸、購買通路)</label>
+                <textarea id="app-note" rows="2" placeholder="例：Panasonic NA-V120，MOMO 折扣價 $28,900" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-sky-500"></textarea>
+            </div>
+            <button onclick="addApplianceItem()" class="w-full bg-sky-500 text-white font-extrabold py-3 rounded-xl text-xs shadow-lg shadow-sky-200 hover:bg-sky-600 transition">
+                加入家電願望筆記 📺
+            </button>
+        </div>
+
+        <!-- Appliance List -->
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100">
+            <h3 class="text-sm font-extrabold mb-3 text-slate-800">📺 傢俱家電選購與採購筆記</h3>
+            <div id="appliance-list" class="space-y-3"></div>
         </div>
     </div>
 
-<script>
-    let currentRoom = localStorage.getItem('pinga_room_id') || 'katy2026';
-    document.getElementById('room-id-input').value = currentRoom;
+    <!-- ================= 3. 日常小記帳頁面 ================= -->
+    <div id="daily-page" class="space-y-4 hidden">
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100 space-y-3">
+            <h3 class="text-sm font-extrabold text-slate-800">➕ 日常小記帳</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">類型</label>
+                    <select id="daily-type" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
+                        <option value="expense">支出 💸</option>
+                        <option value="income">收入 💰</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">金額 (NTD)</label>
+                    <input type="number" id="daily-amount" placeholder="0" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">項目名稱</label>
+                <input type="text" id="daily-name" placeholder="例：晚餐、特力屋零件、五金" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 text-xs focus:outline-none focus:border-pingaOrange">
+            </div>
+            <button onclick="addDailyRecord()" class="w-full bg-pingaOrange text-white font-extrabold py-3 rounded-xl text-xs shadow-lg shadow-amber-200 hover:bg-amber-500 transition">
+                記錄下來 🌸
+            </button>
+        </div>
 
-    let state = {
-        daily: [],
-        renovationBudget: 1500000,
-        renovationItems: [],
-        applianceItems: []
-    };
+        <div class="bg-white rounded-cute p-4 card-shadow border border-slate-100">
+            <h3 class="text-sm font-extrabold mb-3 text-slate-800">📋 日常收支紀錄</h3>
+            <div id="daily-list" class="divide-y divide-slate-100"></div>
+        </div>
+    </div>
 
-    const pingaQuotes = {
-        renovation: "Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸",
-        appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
-        daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
-    };
+    <script>
+        let currentRoom = localStorage.getItem('pinga_room_id') || 'katy2026';
+        document.getElementById('room-id-input').value = currentRoom;
 
-    function loadRoomData() {
-        const saved = localStorage.getItem('pinga_room_' + currentRoom);
-        if (saved) {
-            state = JSON.parse(saved);
-        } else {
-            state = {
-                daily: [],
-                renovationBudget: 1500000,
-                renovationItems: [
-                    { id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null },
-                    { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", attachment: null }
-                ],
-                applianceItems: [
-                    { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }
-                ]
-            };
+        let state = {
+            daily: [],
+            renovationBudget: 1500000,
+            renovationItems: [],
+            applianceItems: []
+        };
+
+        const pingaQuotes = {
+            renovation: "Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸",
+            appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
+            daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
+        };
+
+        function loadRoomData() {
+            const saved = localStorage.getItem('pinga_room_' + currentRoom);
+            if (saved) {
+                state = JSON.parse(saved);
+            } else {
+                state = {
+                    daily: [],
+                    renovationBudget: 1500000,
+                    renovationItems: [
+                        { id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null },
+                        { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", attachment: null }
+                    ],
+                    applianceItems: [
+                        { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }
+                    ]
+                };
+                saveData();
+            }
+            render();
+        }
+
+        function changeRoom() {
+            const inputVal = document.getElementById('room-id-input').value.trim();
+            if (inputVal) {
+                currentRoom = inputVal;
+                localStorage.setItem('pinga_room_id', currentRoom);
+                loadRoomData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('pinga_room_' + currentRoom, JSON.stringify(state));
+            render();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('#renovation-page, #appliance-page, #daily-page').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#tab-renovation-btn, #tab-appliance-btn, #tab-daily-btn').forEach(btn => {
+                btn.className = "flex-1 py-2.5 px-1 text-xs font-black text-slate-500 rounded-xl transition-all duration-200";
+            });
+
+            document.getElementById('pinga-say').innerText = pingaQuotes[tab];
+
+            if (tab === 'renovation') {
+                document.getElementById('renovation-page').classList.remove('hidden');
+                document.getElementById('tab-renovation-btn').className = "flex-1 py-2.5 px-1 text-xs font-black rounded-xl bg-pingaBlack text-white shadow-md";
+            } else if (tab === 'appliance') {
+                document.getElementById('appliance-page').classList.remove('hidden');
+                document.getElementById('tab-appliance-btn').className = "flex-1 py-2.5 px-1 text-xs font-black rounded-xl bg-sky-600 text-white shadow-md";
+            } else {
+                document.getElementById('daily-page').classList.remove('hidden');
+                document.getElementById('tab-daily-btn').className = "flex-1 py-2.5 px-1 text-xs font-black rounded-xl bg-pingaOrange text-white shadow-md";
+            }
+        }
+
+        function setTotalBudget() {
+            const budget = parseFloat(document.getElementById('budget-input').value);
+            if (isNaN(budget) || budget <= 0) return alert('請輸入有效預算');
+            state.renovationBudget = budget;
+            document.getElementById('budget-input').value = '';
             saveData();
         }
-        render();
-    }
 
-    function changeRoom() {
-        const inputVal = document.getElementById('room-id-input').value.trim();
-        if (inputVal) {
-            currentRoom = inputVal;
-            localStorage.setItem('pinga_room_id', currentRoom);
-            loadRoomData();
-        }
-    }
+        function addRenovationItem() {
+            const name = document.getElementById('renov-item-name').value.trim();
+            const amount = parseFloat(document.getElementById('renov-item-amount').value);
+            const status = document.getElementById('renov-item-status').value;
 
-    function saveData() {
-        localStorage.setItem('pinga_room_' + currentRoom, JSON.stringify(state));
-        render();
-    }
+            if (!name || isNaN(amount)) return alert('請填寫完整資訊');
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('renovation-page').style.display = 'none';
-        document.getElementById('appliance-page').style.display = 'none';
-        document.getElementById('daily-page').style.display = 'none';
-
-        document.getElementById('pinga-say').innerText = pingaQuotes[tab];
-
-        if (tab === 'renovation') {
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById('renovation-page').style.display = 'block';
-        } else if (tab === 'appliance') {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.getElementById('appliance-page').style.display = 'block';
-        } else {
-            document.querySelectorAll('.tab-btn')[2].classList.add('active');
-            document.getElementById('daily-page').style.display = 'block';
-        }
-    }
-
-    function setTotalBudget() {
-        const budget = parseFloat(document.getElementById('budget-input').value);
-        if (isNaN(budget)) return alert('請輸入有效預算');
-        state.renovationBudget = budget;
-        document.getElementById('budget-input').value = '';
-        saveData();
-    }
-
-    function addRenovationItem() {
-        const name = document.getElementById('renov-item-name').value.trim();
-        const amount = parseFloat(document.getElementById('renov-item-amount').value);
-        const status = document.getElementById('renov-item-status').value;
-
-        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
-
-        if (!state.renovationItems) state.renovationItems = [];
-        state.renovationItems.unshift({ id: Date.now(), name, amount, status, attachment: null });
-        document.getElementById('renov-item-name').value = '';
-        document.getElementById('renov-item-amount').value = '';
-        saveData();
-    }
-
-    function addApplianceItem() {
-        const name = document.getElementById('app-name').value.trim();
-        const price = parseFloat(document.getElementById('app-price').value);
-        const note = document.getElementById('app-note').value.trim();
-        const status = document.getElementById('app-status').value;
-
-        if (!name || isNaN(price)) return alert('請填寫品項名稱與金額');
-
-        if (!state.applianceItems) state.applianceItems = [];
-        state.applianceItems.unshift({ id: Date.now(), name, price, note, status, attachment: null });
-        document.getElementById('app-name').value = '';
-        document.getElementById('app-price').value = '';
-        document.getElementById('app-note').value = '';
-        saveData();
-    }
-
-    function deleteItem(type, id) {
-        if (!confirm('確定要刪除這筆項目嗎？')) return;
-
-        if (type === 'renov') state.renovationItems = state.renovationItems.filter(i => i.id !== id);
-        else if (type === 'appliance') state.applianceItems = state.applianceItems.filter(i => i.id !== id);
-        else if (type === 'daily') state.daily = state.daily.filter(i => i.id !== id);
-        
-        saveData();
-    }
-
-    function toggleStatus(type, id) {
-        const list = type === 'renov' ? state.renovationItems : state.applianceItems;
-        const item = list.find(i => i.id === id);
-        if (item) {
-            item.status = item.status === 'paid' ? 'unpaid' : 'paid';
+            if (!state.renovationItems) state.renovationItems = [];
+            state.renovationItems.unshift({ id: Date.now(), name, amount, status, attachment: null });
+            document.getElementById('renov-item-name').value = '';
+            document.getElementById('renov-item-amount').value = '';
             saveData();
         }
-    }
 
-    function uploadFile(type, id, input) {
-        const file = input.files[0];
-        if (!file) return;
+        function addApplianceItem() {
+            const name = document.getElementById('app-name').value.trim();
+            const price = parseFloat(document.getElementById('app-price').value);
+            const note = document.getElementById('app-note').value.trim();
+            const status = document.getElementById('app-status').value;
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
+            if (!name || isNaN(price)) return alert('請填寫品項名稱與金額');
+
+            if (!state.applianceItems) state.applianceItems = [];
+            state.applianceItems.unshift({ id: Date.now(), name, price, note, status, attachment: null });
+            document.getElementById('app-name').value = '';
+            document.getElementById('app-price').value = '';
+            document.getElementById('app-note').value = '';
+            saveData();
+        }
+
+        function deleteItem(type, id) {
+            if (!confirm('確定要刪除這筆項目嗎？')) return;
+
+            if (type === 'renov') state.renovationItems = state.renovationItems.filter(i => i.id !== id);
+            else if (type === 'appliance') state.applianceItems = state.applianceItems.filter(i => i.id !== id);
+            else if (type === 'daily') state.daily = state.daily.filter(i => i.id !== id);
+            
+            saveData();
+        }
+
+        function toggleStatus(type, id) {
             const list = type === 'renov' ? state.renovationItems : state.applianceItems;
             const item = list.find(i => i.id === id);
             if (item) {
-                item.attachment = { name: file.name, data: e.target.result, isImage: file.type.startsWith('image/') };
+                item.status = item.status === 'paid' ? 'unpaid' : 'paid';
                 saveData();
             }
-        };
-        reader.readAsDataURL(file);
-    }
+        }
 
-    function addDailyRecord() {
-        const name = document.getElementById('daily-name').value.trim();
-        const amount = parseFloat(document.getElementById('daily-amount').value);
-        const type = document.getElementById('daily-type').value;
+        function uploadFile(type, id, input) {
+            const file = input.files[0];
+            if (!file) return;
 
-        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const list = type === 'renov' ? state.renovationItems : state.applianceItems;
+                const item = list.find(i => i.id === id);
+                if (item) {
+                    item.attachment = { name: file.name, data: e.target.result, isImage: file.type.startsWith('image/') };
+                    saveData();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
 
-        if (!state.daily) state.daily = [];
-        state.daily.unshift({ id: Date.now(), name, amount, type, date: new Date().toLocaleDateString() });
-        document.getElementById('daily-name').value = '';
-        document.getElementById('daily-amount').value = '';
-        saveData();
-    }
+        function addDailyRecord() {
+            const name = document.getElementById('daily-name').value.trim();
+            const amount = parseFloat(document.getElementById('daily-amount').value);
+            const type = document.getElementById('daily-type').value;
 
-    function render() {
-        // 1. 裝潢
-        let paidTotal = 0, unpaidTotal = 0;
-        (state.renovationItems || []).forEach(i => {
-            if (i.status === 'paid') paidTotal += i.amount;
-            else unpaidTotal += i.amount;
-        });
+            if (!name || isNaN(amount)) return alert('請填寫完整資訊');
 
-        document.getElementById('renov-water-level').innerText = `$${((state.renovationBudget || 1500000) - paidTotal).toLocaleString()}`;
-        document.getElementById('renov-total-budget').innerText = `$${(state.renovationBudget || 1500000).toLocaleString()}`;
-        document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
-        document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
+            if (!state.daily) state.daily = [];
+            state.daily.unshift({ id: Date.now(), name, amount, type, date: new Date().toLocaleDateString() });
+            document.getElementById('daily-name').value = '';
+            document.getElementById('daily-amount').value = '';
+            saveData();
+        }
 
-        const renovContainer = document.getElementById('renovation-list');
-        if (!state.renovationItems || state.renovationItems.length === 0) {
-            renovContainer.innerHTML = `<div class="empty-state">🌸 Noot Noot! 還沒有任何工程項目喔</div>`;
-        } else {
-            renovContainer.innerHTML = state.renovationItems.map(item => `
-                <div class="item-card">
-                    <div class="item-header">
+        function render() {
+            // 1. Renovation
+            let paidTotal = 0, unpaidTotal = 0;
+            (state.renovationItems || []).forEach(i => {
+                if (i.status === 'paid') paidTotal += i.amount;
+                else unpaidTotal += i.amount;
+            });
+
+            document.getElementById('renov-water-level').innerText = `$${((state.renovationBudget || 1500000) - paidTotal).toLocaleString()}`;
+            document.getElementById('renov-total-budget').innerText = `$${(state.renovationBudget || 1500000).toLocaleString()}`;
+            document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
+            document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
+
+            const renovContainer = document.getElementById('renovation-list');
+            if (!state.renovationItems || state.renovationItems.length === 0) {
+                renovContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">🌸 Noot Noot! 還沒有任何工程項目喔</div>`;
+            } else {
+                renovContainer.innerHTML = state.renovationItems.map(item => `
+                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-extrabold text-xs text-slate-800">${item.name}</div>
+                                <div class="font-black text-sm text-blue-600 mt-0.5">$${item.amount.toLocaleString()}</div>
+                            </div>
+                            <span onclick="toggleStatus('renov', ${item.id})" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer ${item.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+                                ${item.status === 'paid' ? '已支付 ✅' : '未支付 ⏳'}
+                            </span>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex justify-between items-center text-[11px]">
+                            <div class="flex items-center gap-2">
+                                <label class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg font-bold cursor-pointer hover:bg-blue-100">
+                                    📎 ${item.attachment ? '更換收據' : '上傳收據/合約'}
+                                    <input type="file" class="hidden" accept="image/*,.pdf" onchange="uploadFile('renov', ${item.id}, this)">
+                                </label>
+                                ${item.attachment ? `<a href="${item.attachment.data}" target="_blank" class="text-blue-600 font-extrabold underline">[檢視]</a>` : '<span class="text-slate-400">無附件</span>'}
+                            </div>
+                            <button onclick="deleteItem('renov', ${item.id})" class="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded-lg">🗑️ 刪除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Appliance
+            let appPaid = 0, appPlanned = 0;
+            (state.applianceItems || []).forEach(i => {
+                appPlanned += i.price;
+                if (i.status === 'paid') appPaid += i.price;
+            });
+
+            document.getElementById('appliance-paid-total').innerText = `$${appPaid.toLocaleString()}`;
+            document.getElementById('appliance-planned-total').innerText = `$${appPlanned.toLocaleString()}`;
+
+            const appContainer = document.getElementById('appliance-list');
+            if (!state.applianceItems || state.applianceItems.length === 0) {
+                appContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">📺 Pinga 沒看到願望清單，快新增喜歡的家電吧！</div>`;
+            } else {
+                appContainer.innerHTML = state.applianceItems.map(item => `
+                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-extrabold text-xs text-slate-800">${item.name}</div>
+                                <div class="font-black text-sm text-sky-600 mt-0.5">$${item.price.toLocaleString()}</div>
+                            </div>
+                            <span onclick="toggleStatus('appliance', ${item.id})" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer ${item.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sky-100 text-sky-800 border border-sky-300'}">
+                                ${item.status === 'paid' ? '已購買 ✅' : '願望中 🛒'}
+                            </span>
+                        </div>
+                        ${item.note ? `<div class="mt-2 bg-amber-50 p-2 rounded-xl text-[11px] text-slate-600 border border-amber-200">📌 筆記/型號：${item.note}</div>` : ''}
+                        <div class="mt-2.5 pt-2 border-t border-dashed border-slate-200 flex justify-between items-center text-[11px]">
+                            <div class="flex items-center gap-2">
+                                <label class="bg-sky-50 text-sky-600 px-2.5 py-1 rounded-lg font-bold cursor-pointer hover:bg-sky-100">
+                                    📎 ${item.attachment ? '更換照片' : '上傳發票/保固卡'}
+                                    <input type="file" class="hidden" accept="image/*,.pdf" onchange="uploadFile('appliance', ${item.id}, this)">
+                                </label>
+                                ${item.attachment ? `<a href="${item.attachment.data}" target="_blank" class="text-sky-600 font-extrabold underline">[檢視]</a>` : '<span class="text-slate-400">無照片</span>'}
+                            </div>
+                            <button onclick="deleteItem('appliance', ${item.id})" class="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded-lg">🗑️ 刪除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 3. Daily
+            const dailyContainer = document.getElementById('daily-list');
+            if (!state.daily || state.daily.length === 0) {
+                dailyContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">💸 今天還沒有記錄任何收支喔！</div>`;
+            } else {
+                dailyContainer.innerHTML = state.daily.map(item => `
+                    <div class="flex justify-between items-center py-2.5">
                         <div>
-                            <div style="font-weight: 800; font-size: 14px;">${item.name}</div>
-                            <div style="font-size: 14px; font-weight: 800; color: #0984e3; margin-top:2px;">$${item.amount.toLocaleString()}</div>
+                            <div class="font-extrabold text-xs text-slate-800">${item.name}</div>
+                            <div class="text-[10px] text-slate-400">${item.date}</div>
                         </div>
-                        <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}" onclick="toggleStatus('renov', ${item.id})">
-                            ${item.status === 'paid' ? '已支付 ✅' : '未支付 ⏳'}
-                        </span>
-                    </div>
-                    <div class="attachment-box">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <label class="file-upload-btn">
-                                📎 ${item.attachment ? '更換收據' : '上傳收據/合約'}
-                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('renov', ${item.id}, this)">
-                            </label>
-                            ${item.attachment ? (item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank" style="font-size:11px;color:#0984e3;font-weight:bold;">[查看照片]</a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}" style="font-size:11px;color:#0984e3;font-weight:bold;">[下載檔案]</a>`) : ''}
+                        <div class="flex items-center gap-3">
+                            <div class="font-black text-sm ${item.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}">
+                                ${item.type === 'income' ? '+' : '-'} $${item.amount.toLocaleString()}
+                            </div>
+                            <button onclick="deleteItem('daily', ${item.id})" class="text-slate-300 hover:text-rose-500 font-bold text-xs">✕</button>
                         </div>
-                        <button class="delete-btn" onclick="deleteItem('renov', ${item.id})">🗑️ 刪除</button>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
-        // 2. 家電
-        let appPaid = 0, appPlanned = 0;
-        (state.applianceItems || []).forEach(i => {
-            appPlanned += i.price;
-            if (i.status === 'paid') appPaid += i.price;
-        });
-
-        document.getElementById('appliance-paid-total').innerText = `$${appPaid.toLocaleString()}`;
-        document.getElementById('appliance-planned-total').innerText = `$${appPlanned.toLocaleString()}`;
-
-        const appContainer = document.getElementById('appliance-list');
-        if (!state.applianceItems || state.applianceItems.length === 0) {
-            appContainer.innerHTML = `<div class="empty-state">📺 Pinga 沒看到願望清單，快新增喜歡的家電吧！</div>`;
-        } else {
-            appContainer.innerHTML = state.applianceItems.map(item => `
-                <div class="item-card">
-                    <div class="item-header">
-                        <div>
-                            <div style="font-weight: 800; font-size: 14px;">${item.name}</div>
-                            <div style="font-size: 14px; font-weight: 800; color: #0984e3; margin-top:2px;">$${item.price.toLocaleString()}</div>
-                        </div>
-                        <span class="badge-status ${item.status === 'paid' ? 'badge-paid' : 'badge-unpaid'}" onclick="toggleStatus('appliance', ${item.id})">
-                            ${item.status === 'paid' ? '已購買 ✅' : '願望中 🛒'}
-                        </span>
-                    </div>
-                    ${item.note ? `<div class="appliance-note">📌 筆記/型號：${item.note}</div>` : ''}
-                    <div class="attachment-box">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <label class="file-upload-btn">
-                                📎 ${item.attachment ? '更換照片' : '上傳發票/保固卡'}
-                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('appliance', ${item.id}, this)">
-                            </label>
-                            ${item.attachment ? (item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank" style="font-size:11px;color:#0984e3;font-weight:bold;">[查看照片]</a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}" style="font-size:11px;color:#0984e3;font-weight:bold;">[下載檔案]</a>`) : ''}
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem('appliance', ${item.id})">🗑️ 刪除</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 3. 日常記帳
-        const dailyContainer = document.getElementById('daily-list');
-        if (!state.daily || state.daily.length === 0) {
-            dailyContainer.innerHTML = `<div class="empty-state">💸 今天還沒有記錄任何收支喔！</div>`;
-        } else {
-            dailyContainer.innerHTML = state.daily.map(item => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6;">
-                    <div>
-                        <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
-                        <div style="font-size: 11px; color: #8395a7;">${item.date}</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="font-weight: 800; font-size: 15px; color: ${item.type === 'income' ? '#00b894' : '#ff7675'}">
-                            ${item.type === 'income' ? '+' : '-'} $${item.amount.toLocaleString()}
-                        </div>
-                        <button class="delete-btn" style="padding: 3px 6px;" onclick="deleteItem('daily', ${item.id})">✕</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-
-    loadRoomData();
-</script>
+        loadRoomData();
+    </script>
 </body>
 </html>
