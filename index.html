@@ -9,7 +9,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pinga記帳">
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/SVG_Penguin.svg/1200px-SVG_Penguin.svg.png">
 
     <style>
         :root {
@@ -36,37 +35,33 @@
             -webkit-user-select: none;
         }
 
-        /* 🐧 Pinga 可愛互動 Header */
+        /* 🐧 Pinga 可愛 Header (內嵌圖像) */
         .pinga-header {
             background: linear-gradient(135deg, #ffffff 0%, #fff9db 100%);
             border-radius: var(--radius-cute);
-            padding: 16px 20px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             box-shadow: var(--shadow-soft);
             margin-bottom: 16px;
             border: 3px solid #feca57;
             position: relative;
-            overflow: hidden;
         }
 
-        .pinga-avatar-box {
-            width: 60px; height: 60px;
-            background: var(--pinga-black);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+        .pinga-avatar-img {
+            height: 75px;
+            width: auto;
+            object-fit: contain;
             flex-shrink: 0;
             animation: pingaWiggle 3s infinite ease-in-out;
-            border: 3px solid #ff9f43;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
         }
 
         @keyframes pingaWiggle {
             0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-8deg); }
-            75% { transform: rotate(8deg); }
+            25% { transform: rotate(-6deg); }
+            75% { transform: rotate(6deg); }
         }
 
         .pinga-dialogue {
@@ -78,9 +73,10 @@
             color: #2c3e50;
             border: 2px solid #feca57;
             box-shadow: 0 4px 10px rgba(254, 202, 87, 0.2);
+            flex: 1;
         }
 
-        /* 可愛分頁切換 */
+        /* 分頁切換 */
         .tab-switcher {
             display: flex;
             background: #dcdde1;
@@ -109,7 +105,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* 🐧 預算卡片 */
+        /* 預算卡片 */
         .budget-overview-card {
             background: linear-gradient(135deg, #1e272e 0%, #353b48 100%);
             border-radius: 28px;
@@ -122,11 +118,11 @@
         }
 
         .budget-overview-card::after {
-            content: '🐧🌸';
+            content: '🌸';
             position: absolute;
-            right: 15px; top: 15px;
-            font-size: 28px;
-            opacity: 0.8;
+            right: 18px; top: 15px;
+            font-size: 24px;
+            opacity: 0.9;
         }
 
         .budget-title { font-size: 12px; color: var(--pinga-orange); font-weight: bold; letter-spacing: 0.5px; }
@@ -144,7 +140,7 @@
         .sub-budget-box label { color: #dcdde1; font-size: 11px; display: block; }
         .sub-budget-box strong { font-size: 15px; color: #ffffff; }
 
-        /* 通用可愛卡片 */
+        /* 通用卡片 */
         .cute-card {
             background: var(--card-white);
             border-radius: var(--radius-cute);
@@ -249,7 +245,6 @@
             cursor: pointer;
         }
 
-        /* Pinga 空狀態可愛提示 */
         .empty-state {
             text-align: center;
             padding: 30px 10px;
@@ -257,22 +252,22 @@
         }
 
         .empty-state-icon {
-            font-size: 45px;
+            font-size: 40px;
             margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 🐧 Pinga 吉祥物頂部 -->
+    <!-- 🐧 拿紫色小花 Pinga 直接嵌入網頁中 -->
     <div class="pinga-header">
-        <div class="pinga-avatar-box">🐧</div>
+        <img id="pinga-img" alt="Pinga" class="pinga-avatar-img">
         <div class="pinga-dialogue" id="pinga-say">
             Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
         </div>
     </div>
 
-    <!-- 三個頁籤切換 -->
+    <!-- 頁籤切換 -->
     <div class="tab-switcher">
         <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢工程款</button>
         <button class="tab-btn" onclick="switchTab('appliance')">📺 傢俱與家電</button>
@@ -392,7 +387,7 @@
                 <label>金額</label>
                 <input type="number" id="daily-amount" placeholder="0">
             </div>
-            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 🐧</button>
+            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 🌸</button>
         </div>
 
         <div class="cute-card">
@@ -402,7 +397,12 @@
     </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('pinga_budget_v4')) || {
+    // 拿紫色小花的 Pinga 圖片，以 SVG 向量內嵌（免上傳檔案，直接顯示）
+    const pingaFlowerSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><g transform="translate(10,10)"><path d="M 32 42 C 18 42, 10 58, 10 82 C 10 102, 28 108, 42 108 C 58 108, 74 102, 74 82 C 74 58, 66 42, 52 42 Z" fill="%23FFFFFF" stroke="%23222222" stroke-width="4"/><path d="M 38 10 C 26 10, 20 25, 20 45 C 20 60, 28 68, 42 68 C 56 68, 64 60, 64 45 C 64 25, 58 10, 46 10 Z" fill="%23222222"/><path d="M 28 22 C 24 22, 22 28, 22 36 C 22 48, 28 52, 42 52 C 56 52, 62 48, 62 36 C 62 28, 60 22, 56 22 Z" fill="%23FFFFFF"/><circle cx="34" cy="30" r="4" fill="%23222222"/><circle cx="50" cy="30" r="4" fill="%23222222"/><ellipse cx="42" cy="38" rx="8" ry="4" fill="%23EE5253"/><ellipse cx="26" cy="104" rx="12" ry="5" fill="%23FF9F43"/><ellipse cx="58" cy="104" rx="12" ry="5" fill="%23FF9F43"/><path d="M 68 35 C 55 55, 48 70, 45 90" stroke="%2378E08F" stroke-width="3" fill="none"/><g transform="translate(68,32)"><circle cx="0" cy="-12" r="7" fill="%239B59B6"/><circle cx="12" cy="0" r="7" fill="%239B59B6"/><circle cx="0" cy="12" r="7" fill="%239B59B6"/><circle cx="-12" cy="0" r="7" fill="%239B59B6"/><circle cx="0" cy="0" r="5" fill="%23F1C40F"/></g></g></svg>`;
+
+    document.getElementById('pinga-img').src = pingaFlowerSvg;
+
+    let state = JSON.parse(localStorage.getItem('pinga_budget_v6')) || {
         daily: [],
         renovationBudget: 1500000,
         renovationItems: [
@@ -416,13 +416,13 @@
     };
 
     const pingaQuotes = {
-        renovation: "Noot Noot! 裝潢工程款記得要把控好尾款喔！🛠️",
-        appliance: "Pinga 最喜歡逛家電了！有沒有想買的小紅小黃家電？📺",
+        renovation: "Noot Noot! 裝潢工程款記得要把控好尾款喔！🌸",
+        appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
         daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
     };
 
     function saveData() {
-        localStorage.setItem('pinga_budget_v4', JSON.stringify(state));
+        localStorage.setItem('pinga_budget_v6', JSON.stringify(state));
         render();
     }
 
@@ -545,7 +545,7 @@
 
         const renovContainer = document.getElementById('renovation-list');
         if (state.renovationItems.length === 0) {
-            renovContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🐧🌱</div><div>Noot Noot! 還沒有任何工程項目喔</div></div>`;
+            renovContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🌸</div><div>Noot Noot! 還沒有任何工程項目喔</div></div>`;
         } else {
             renovContainer.innerHTML = state.renovationItems.map(item => `
                 <div class="item-card">
@@ -584,7 +584,7 @@
 
         const appContainer = document.getElementById('appliance-list');
         if (state.applianceItems.length === 0) {
-            appContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🐧🌸</div><div>Pinga 沒看到願望清單，快新增喜歡的家電吧！</div></div>`;
+            appContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📺</div><div>Pinga 沒看到願望清單，快新增喜歡的家電吧！</div></div>`;
         } else {
             appContainer.innerHTML = state.applianceItems.map(item => `
                 <div class="item-card">
@@ -615,7 +615,7 @@
         // 3. 日常記帳
         const dailyContainer = document.getElementById('daily-list');
         if (state.daily.length === 0) {
-            dailyContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🐧💸</div><div>今天還沒有記錄任何收支喔！</div></div>`;
+            dailyContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💸</div><div>今天還沒有記錄任何收支喔！</div></div>`;
         } else {
             dailyContainer.innerHTML = state.daily.map(item => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6;">
