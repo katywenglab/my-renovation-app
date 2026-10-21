@@ -10,10 +10,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pinga記帳">
 
-    <!-- Firebase SDK (雲端即時資料庫) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
     <style>
         :root {
             --pinga-black: #1e272e;
@@ -36,7 +32,8 @@
             color: var(--text-main);
             margin: 0;
             padding: 15px 15px 90px 15px;
-            -webkit-user-select: none;
+            -webkit-user-select: auto;
+            user-select: auto;
         }
 
         /* 🐧 Pinga 可愛 Header */
@@ -95,16 +92,20 @@
 
         .room-input {
             border: 1.5px solid #dcdde1;
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 12px;
-            width: 140px;
-            font-size: 12px;
+            width: 150px;
+            font-size: 13px;
             font-weight: bold;
             outline: none;
-            background: #f8f9fa;
+            background: #ffffff;
+            color: #2d3436;
         }
 
-        .room-input:focus { border-color: var(--pinga-orange); }
+        .room-input:focus {
+            border-color: var(--pinga-orange);
+            background: #fff9db;
+        }
 
         /* 分頁切換 */
         .tab-switcher {
@@ -272,9 +273,41 @@
 </head>
 <body>
 
-    <!-- 🐧 Pinga 吉祥物 Header -->
+    <!-- 🐧 Pinga 吉祥物 Header (嵌入向量精緻圖像，保證永不破圖) -->
     <div class="pinga-header">
-        <img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f427.png" id="pinga-main-img" alt="Pinga" class="pinga-avatar-img">
+        <svg class="pinga-avatar-img" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- 腳 -->
+            <ellipse cx="50" cy="185" rx="25" ry="10" fill="#ff9f43"/>
+            <ellipse cx="110" cy="185" rx="25" ry="10" fill="#ff9f43"/>
+            <!-- 身體 -->
+            <path d="M 35 75 C 10 95, 10 160, 45 178 C 65 185, 95 185, 115 178 C 150 160, 150 95, 125 75 Z" fill="#ffffff" stroke="#22252a" stroke-width="5"/>
+            <!-- 腹部軟萌感 -->
+            <path d="M 45 85 C 25 105, 25 150, 50 168 C 68 175, 92 175, 110 168 C 135 150, 135 105, 115 85 Z" fill="#f8f9fa"/>
+            <!-- 頭部 -->
+            <path d="M 40 25 C 20 40, 20 70, 40 80 C 60 90, 100 90, 120 80 C 140 70, 140 40, 120 25 C 100 10, 60 10, 40 25 Z" fill="#22252a"/>
+            <!-- 臉部白色區域 -->
+            <path d="M 45 35 C 32 45, 32 68, 48 74 C 62 80, 98 80, 112 74 C 128 68, 128 45, 115 35 C 98 25, 62 25, 45 35 Z" fill="#ffffff"/>
+            <!-- 眼睛 -->
+            <circle cx="58" cy="48" r="7" fill="#22252a"/>
+            <circle cx="56" cy="46" r="2.5" fill="#ffffff"/>
+            <circle cx="102" cy="48" r="7" fill="#22252a"/>
+            <circle cx="100" cy="46" r="2.5" fill="#ffffff"/>
+            <!-- 嘴巴 -->
+            <path d="M 70 56 Q 80 66 90 56 Q 80 62 70 56 Z" fill="#ee5253" stroke="#ee5253" stroke-width="2"/>
+            <!-- 手臂攜帶花朵 -->
+            <path d="M 32 90 Q 20 120 40 135 Q 55 120 50 100 Z" fill="#ffffff" stroke="#22252a" stroke-width="3"/>
+            <path d="M 128 90 Q 140 120 120 135 Q 105 120 110 100 Z" fill="#ffffff" stroke="#22252a" stroke-width="3"/>
+            <!-- 紫色小花與花莖 -->
+            <path d="M 115 125 Q 125 80 135 45" stroke="#78e08f" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <g transform="translate(135, 45)">
+                <circle cx="0" cy="-14" r="9" fill="#9b59b6"/>
+                <circle cx="14" cy="0" r="9" fill="#9b59b6"/>
+                <circle cx="0" cy="14" r="9" fill="#9b59b6"/>
+                <circle cx="-14" cy="0" r="9" fill="#9b59b6"/>
+                <circle cx="0" cy="0" r="7" fill="#f1c40f"/>
+            </g>
+        </svg>
+
         <div class="pinga-dialogue" id="pinga-say">
             Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
         </div>
@@ -283,7 +316,7 @@
     <!-- 🏠 雙人共享房間設定 -->
     <div class="room-bar">
         <span>🔑 共同帳簿代碼：</span>
-        <input type="text" id="room-id-input" class="room-input" placeholder="例: katy2026" onchange="changeRoom()">
+        <input type="text" id="room-id-input" class="room-input" value="katy2026" oninput="changeRoom()">
     </div>
 
     <!-- 頁籤切換 -->
@@ -416,32 +449,7 @@
     </div>
 
 <script>
-    // 自動載入穩定 Pinga 小花照片
-    const pingaImgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/SVG_Penguin.svg/800px-SVG_Penguin.svg.png";
-    
-    // 設定高解析度 Pinga 圖片
-    const imgEl = document.getElementById('pinga-main-img');
-    const photoImg = new Image();
-    photoImg.src = "https://static.wikia.nocookie.net/pingu/images/3/30/Pinga_flower.png";
-    photoImg.onload = function() { imgEl.src = photoImg.src; };
-
-    // 免費 Firebase 公共雲端庫
-    const firebaseConfig = {
-        apiKey: "AIzaSyD-demo-pinga-key",
-        authDomain: "pinga-renovation.firebaseapp.com",
-        projectId: "pinga-renovation-demo",
-        storageBucket: "pinga-renovation-demo.appspot.com",
-        messagingSenderId: "1029384756",
-        appId: "1:1029384756:web:abcdef123456"
-    };
-
-    let db;
-    try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-    } catch(e) { console.log('Firebase fallback'); }
-
-    let currentRoom = localStorage.getItem('pinga_room_id') || 'our-sweet-home';
+    let currentRoom = localStorage.getItem('pinga_room_id') || 'katy2026';
     document.getElementById('room-id-input').value = currentRoom;
 
     let state = {
@@ -457,48 +465,38 @@
         daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
     };
 
-    function listenToRoomData() {
-        if (!db) return loadLocalBackup();
-        
-        db.collection("renovation_rooms").doc(currentRoom)
-            .onSnapshot((doc) => {
-                if (doc.exists) {
-                    state = doc.data();
-                    render();
-                } else {
-                    state = {
-                        daily: [],
-                        renovationBudget: 1500000,
-                        renovationItems: [{ id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null }],
-                        applianceItems: [{ id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }]
-                    };
-                    saveData();
-                }
-            }, (error) => {
-                loadLocalBackup();
-            });
+    function loadRoomData() {
+        const saved = localStorage.getItem('pinga_room_' + currentRoom);
+        if (saved) {
+            state = JSON.parse(saved);
+        } else {
+            state = {
+                daily: [],
+                renovationBudget: 1500000,
+                renovationItems: [
+                    { id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null },
+                    { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", attachment: null }
+                ],
+                applianceItems: [
+                    { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }
+                ]
+            };
+            saveData();
+        }
+        render();
     }
 
     function changeRoom() {
-        const newRoom = document.getElementById('room-id-input').value.trim();
-        if (newRoom) {
-            currentRoom = newRoom;
+        const inputVal = document.getElementById('room-id-input').value.trim();
+        if (inputVal) {
+            currentRoom = inputVal;
             localStorage.setItem('pinga_room_id', currentRoom);
-            listenToRoomData();
+            loadRoomData();
         }
     }
 
     function saveData() {
-        if (db) {
-            db.collection("renovation_rooms").doc(currentRoom).set(state);
-        }
-        localStorage.setItem('pinga_backup_' + currentRoom, JSON.stringify(state));
-        render();
-    }
-
-    function loadLocalBackup() {
-        const backup = localStorage.getItem('pinga_backup_' + currentRoom);
-        if (backup) state = JSON.parse(backup);
+        localStorage.setItem('pinga_room_' + currentRoom, JSON.stringify(state));
         render();
     }
 
@@ -713,7 +711,7 @@
         }
     }
 
-    listenToRoomData();
+    loadRoomData();
 </script>
 </body>
 </html>
