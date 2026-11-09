@@ -231,6 +231,7 @@
             color: #2d3436;
             margin-top: 8px;
             border: 1px dashed #feca57;
+            white-space: pre-wrap;
         }
 
         .attachment-box {
@@ -325,7 +326,7 @@
     <div class="tab-switcher">
         <button class="tab-btn active" onclick="switchTab('renovation')">🛠️ 裝潢工程款</button>
         <button class="tab-btn" onclick="switchTab('appliance')">📺 傢俱與家電</button>
-        <button class="tab-btn" onclick="switchTab('daily')">💸 日常小記帳</button>
+        <button class="tab-btn" onclick="switchTab('discussion')">📐 裝潢討論與平面圖</button>
     </div>
 
     <!-- ================= 1. 裝潢工程頁面 ================= -->
@@ -384,7 +385,6 @@
 
     <!-- ================= 2. 傢俱家電預算頁面 ================= -->
     <div id="appliance-page" style="display: none;">
-        <!-- 家電預算卡片 -->
         <div class="budget-overview-card" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border-color: #74b9ff;">
             <div class="budget-title" style="color: #dfe6e9;">APPLIANCES REMAINING BUDGET（家電剩餘預算）</div>
             <div class="budget-amount" id="appliance-water-level">$0</div>
@@ -403,7 +403,6 @@
             </div>
         </div>
 
-        <!-- 家電總預算設定 -->
         <div class="cute-card">
             <h3>⚙️ 設定傢俱與家電總預算</h3>
             <div class="form-group">
@@ -442,43 +441,52 @@
         </div>
     </div>
 
-    <!-- ================= 3. 日常記帳頁面 ================= -->
-    <div id="daily-page" style="display: none;">
+    <!-- ================= 3. 裝潢討論與平面圖頁面 ================= -->
+    <div id="discussion-page" style="display: none;">
         <div class="cute-card">
-            <h3>➕ 日常小記帳</h3>
+            <h3>📐 新增裝潢討論 / 上傳平面圖</h3>
             <div class="form-group">
-                <label>類型</label>
-                <select id="daily-type">
-                    <option value="expense">支出 💸</option>
-                    <option value="income">收入 💰</option>
+                <label>空間區域 / 分類</label>
+                <select id="disc-area">
+                    <option value="全屋配置">全屋配置 / 總平面圖 🏠</option>
+                    <option value="客廳">客廳 🛋️</option>
+                    <option value="廚房">廚房 🍳</option>
+                    <option value="主臥室">主臥室 🛏️</option>
+                    <option value="衛浴">衛浴 🚿</option>
+                    <option value="玄關/陽台">玄關 / 陽台 🪴</option>
+                    <option value="其他">其他動線 / 水電插座 💡</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>項目名稱</label>
-                <input type="text" id="daily-name" placeholder="例：晚餐、咖啡">
+                <label>討論主題 / 項目標題</label>
+                <input type="text" id="disc-title" placeholder="例：主臥衣櫃動線、天花板出風口位置、弱電箱配置">
             </div>
             <div class="form-group">
-                <label>金額</label>
-                <input type="number" id="daily-amount" placeholder="0">
+                <label>詳細討論筆記 / 設計師要求</label>
+                <textarea id="disc-content" rows="3" placeholder="記錄雙方共識、尺寸確認、插座數量或施工注意重點..."></textarea>
             </div>
-            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 ✨</button>
+            <div class="form-group">
+                <label>📎 上傳平面圖 / 施工圖紙 (圖片或 PDF)</label>
+                <input type="file" id="disc-file-input" accept="image/*,.pdf">
+            </div>
+            <button class="btn-pinga" style="background: #6c5ce7;" onclick="addDiscussionItem()">發布討論筆記 📐</button>
         </div>
 
         <div class="cute-card">
-            <h3>📋 收支記錄</h3>
-            <div id="daily-list"></div>
+            <h3>📋 裝潢圖面與討論紀錄</h3>
+            <div id="discussion-list"></div>
         </div>
     </div>
 
     <!-- 🖼️ 點擊照片放大檢視彈窗 -->
     <div id="img-modal" onclick="closeImgModal()">
         <span class="modal-close-hint">✕</span>
-        <img id="modal-img-tag" src="" alt="收據原圖" onclick="event.stopPropagation()">
+        <img id="modal-img-tag" src="" alt="原圖預覽" onclick="event.stopPropagation()">
     </div>
 
 <script>
-    // ================= 🗄️ IndexedDB 大容量收據存儲庫 =================
-    const DB_NAME = 'PingaReceiptsDB_v2';
+    // ================= 🗄️ IndexedDB 大容量檔案存儲庫 =================
+    const DB_NAME = 'PingaReceiptsDB_v3';
     const STORE_NAME = 'receipt_files';
     let dbPromise = null;
 
@@ -526,7 +534,7 @@
     document.getElementById('room-id-input').value = currentRoom;
 
     let state = {
-        daily: [],
+        discussions: [],
         renovationBudget: 1500000,
         applianceBudget: 350000,
         renovationItems: [],
@@ -536,7 +544,7 @@
     const pingaQuotes = {
         renovation: "✨ 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！",
         appliance: "⭐️ Pinga 最喜歡挑新家電了！看著預算水庫買最安心！📺",
-        daily: "🌟 今天也有好好省錢嗎？每一筆 Pinga 都幫妳收好！💸"
+        discussion: "📐 有任何格局動線的想法，趕快把平面圖存進來討論！🏠"
     };
 
     function loadRoomData() {
@@ -544,9 +552,12 @@
         if (saved) {
             state = JSON.parse(saved);
             if (!state.applianceBudget) state.applianceBudget = 350000;
+            if (!state.discussions) state.discussions = [];
         } else {
             state = {
-                daily: [],
+                discussions: [
+                    { id: 201, area: "全屋配置", title: "原始裝修平面圖確認", content: "設計師提供的第一版格局配置，需確認冷氣銅管與天花板高度。", date: new Date().toLocaleDateString(), fileId: null, fileName: null }
+                ],
                 renovationBudget: 1500000,
                 applianceBudget: 350000,
                 renovationItems: [
@@ -580,7 +591,7 @@
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('renovation-page').style.display = 'none';
         document.getElementById('appliance-page').style.display = 'none';
-        document.getElementById('daily-page').style.display = 'none';
+        document.getElementById('discussion-page').style.display = 'none';
 
         document.getElementById('pinga-say').innerText = pingaQuotes[tab];
 
@@ -592,7 +603,7 @@
             document.getElementById('appliance-page').style.display = 'block';
         } else {
             document.querySelectorAll('.tab-btn')[2].classList.add('active');
-            document.getElementById('daily-page').style.display = 'block';
+            document.getElementById('discussion-page').style.display = 'block';
         }
     }
 
@@ -644,12 +655,66 @@
         saveData();
     }
 
+    // --- 新增裝潢討論與平面圖 ---
+    async function addDiscussionItem() {
+        const area = document.getElementById('disc-area').value;
+        const title = document.getElementById('disc-title').value.trim();
+        const content = document.getElementById('disc-content').value.trim();
+        const fileInput = document.getElementById('disc-file-input');
+
+        if (!title) return alert('請填寫討論主題！');
+
+        let fileId = null;
+        let fileName = null;
+
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileId = 'disc_' + Date.now();
+            fileName = file.name;
+
+            const reader = new FileReader();
+            const filePromise = new Promise((resolve, reject) => {
+                reader.onload = async (e) => {
+                    try {
+                        await saveReceiptFile(fileId, { data: e.target.result, name: file.name, type: file.type });
+                        resolve();
+                    } catch (err) { reject(err); }
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            try {
+                await filePromise;
+            } catch (err) {
+                return alert('平面圖檔案儲存失敗：' + err.message);
+            }
+        }
+
+        if (!state.discussions) state.discussions = [];
+        state.discussions.unshift({
+            id: Date.now(),
+            area,
+            title,
+            content,
+            date: new Date().toLocaleDateString(),
+            fileId,
+            fileName
+        });
+
+        document.getElementById('disc-title').value = '';
+        document.getElementById('disc-content').value = '';
+        document.getElementById('disc-file-input').value = '';
+        saveData();
+        alert('📐 裝潢討論筆記已成功發布！');
+    }
+
     function deleteItem(type, id) {
         if (!confirm('確定要刪除這筆項目嗎？')) return;
 
         if (type === 'renov') state.renovationItems = state.renovationItems.filter(i => i.id !== id);
         else if (type === 'appliance') state.applianceItems = state.applianceItems.filter(i => i.id !== id);
-        else if (type === 'daily') state.daily = state.daily.filter(i => i.id !== id);
+        else if (type === 'disc') state.discussions = state.discussions.filter(i => i.id !== id);
         
         saveData();
     }
@@ -663,7 +728,7 @@
         }
     }
 
-    // --- 📷 照片/收據上傳與持久化處理 ---
+    // --- 📷 檔案上傳與預覽處理 ---
     async function uploadReceiptFile(type, id, input) {
         const file = input.files[0];
         if (!file) return;
@@ -671,11 +736,11 @@
         const reader = new FileReader();
         reader.onload = async function(e) {
             const fileDataUrl = e.target.result;
-            const fileId = 'receipt_' + Date.now();
+            const fileId = 'file_' + Date.now();
             try {
                 await saveReceiptFile(fileId, { data: fileDataUrl, name: file.name, type: file.type });
 
-                const list = type === 'renov' ? state.renovationItems : state.applianceItems;
+                const list = type === 'renov' ? state.renovationItems : (type === 'appliance' ? state.applianceItems : state.discussions);
                 const item = list.find(i => i.id === id);
                 if (item) {
                     item.fileId = fileId;
@@ -683,7 +748,7 @@
                     saveData();
                 }
             } catch (err) {
-                alert('照片儲存失敗：' + err.message);
+                alert('檔案儲存失敗：' + err.message);
             }
         };
         reader.readAsDataURL(file);
@@ -692,7 +757,7 @@
     async function viewReceipt(fileId) {
         try {
             const record = await getReceiptFile(fileId);
-            if (!record || !record.data) return alert('找不到照片資料！');
+            if (!record || !record.data) return alert('找不到檔案資料！');
 
             if (record.type && record.type.startsWith('image/')) {
                 document.getElementById('modal-img-tag').src = record.data;
@@ -700,31 +765,17 @@
             } else {
                 const a = document.createElement('a');
                 a.href = record.data;
-                a.download = record.name || 'receipt';
+                a.download = record.name || 'floor_plan';
                 a.click();
             }
         } catch (err) {
-            alert('無法開啟收據：' + err.message);
+            alert('無法開啟檔案：' + err.message);
         }
     }
 
     function closeImgModal() {
         document.getElementById('img-modal').style.display = 'none';
         document.getElementById('modal-img-tag').src = '';
-    }
-
-    function addDailyRecord() {
-        const name = document.getElementById('daily-name').value.trim();
-        const amount = parseFloat(document.getElementById('daily-amount').value);
-        const type = document.getElementById('daily-type').value;
-
-        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
-
-        if (!state.daily) state.daily = [];
-        state.daily.unshift({ id: Date.now(), name, amount, type, date: new Date().toLocaleDateString() });
-        document.getElementById('daily-name').value = '';
-        document.getElementById('daily-amount').value = '';
-        saveData();
     }
 
     // --- 畫面渲染 ---
@@ -822,22 +873,37 @@
             `).join('');
         }
 
-        // 3. 日常記帳
-        const dailyContainer = document.getElementById('daily-list');
-        if (!state.daily || state.daily.length === 0) {
-            dailyContainer.innerHTML = `<div class="empty-state">💸 今天還沒有記錄任何收支喔！</div>`;
+        // 3. 裝潢討論與平面圖清單
+        const discContainer = document.getElementById('discussion-list');
+        if (!state.discussions || state.discussions.length === 0) {
+            discContainer.innerHTML = `<div class="empty-state">📐 還沒有討論筆記，快把平面圖與想法記錄下來吧！</div>`;
         } else {
-            dailyContainer.innerHTML = state.daily.map(item => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f2f6;">
-                    <div>
-                        <div style="font-weight: 700; font-size: 14px;">${item.name}</div>
-                        <div style="font-size: 11px; color: #8395a7;">${item.date}</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="font-weight: 800; font-size: 15px; color: ${item.type === 'income' ? '#00b894' : '#ff7675'}">
-                            ${item.type === 'income' ? '+' : '-'} $${item.amount.toLocaleString()}
+            discContainer.innerHTML = state.discussions.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size: 11px; background: #ede7f6; color: #6c5ce7; padding: 3px 8px; border-radius: 8px; font-weight: 800;">${item.area}</span>
+                                <span style="font-weight: 800; font-size: 15px; color: #2d3436;">${item.title}</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-sub); margin-top: 4px;">📅 ${item.date}</div>
                         </div>
-                        <button class="delete-btn" style="padding: 3px 6px;" onclick="deleteItem('daily', ${item.id})">✕</button>
+                    </div>
+                    ${item.content ? `<div class="appliance-note" style="background:#f8f9fa; border-color:#dcdde1;">📝 ${item.content}</div>` : ''}
+                    <div class="attachment-box">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            ${item.fileId ? `
+                                <button class="file-upload-btn" style="background:#e8f0fe; color:#1a73e8;" onclick="viewReceipt('${item.fileId}')">
+                                    🔍 查看圖面 / 下載 (${item.fileName || '檔案'})
+                                </button>
+                            ` : `
+                                <label class="file-upload-btn">
+                                    📎 補傳平面圖
+                                    <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadReceiptFile('disc', ${item.id}, this)">
+                                </label>
+                            `}
+                        </div>
+                        <button class="delete-btn" onclick="deleteItem('disc', ${item.id})">🗑️ 刪除</button>
                     </div>
                 </div>
             `).join('');
