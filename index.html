@@ -36,11 +36,11 @@
             user-select: auto;
         }
 
-        /* 🐧 Pingu & Pinga 親親可愛 Header */
+        /* ⭐️ 星星簡潔可愛 Header */
         .pinga-header {
             background: linear-gradient(135deg, #ffffff 0%, #fff9db 100%);
             border-radius: var(--radius-cute);
-            padding: 12px 18px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
             gap: 14px;
@@ -49,26 +49,17 @@
             border: 3px solid #feca57;
         }
 
-        .pinga-avatar-box {
-            position: relative;
+        .star-avatar-box {
+            font-size: 42px;
+            line-height: 1;
             flex-shrink: 0;
+            animation: starBounce 2.5s infinite ease-in-out;
+            user-select: none;
         }
 
-        .pinga-avatar-img {
-            height: 85px;
-            width: 85px;
-            border-radius: 20px;
-            object-fit: cover;
-            border: 3px solid #feca57;
-            box-shadow: 0 4px 12px rgba(254, 202, 87, 0.4);
-            animation: pingaWiggle 3s infinite ease-in-out;
-            display: block;
-        }
-
-        @keyframes pingaWiggle {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-3deg) scale(1.02); }
-            75% { transform: rotate(3deg) scale(0.98); }
+        @keyframes starBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(8deg); }
         }
 
         .pinga-dialogue {
@@ -262,16 +253,7 @@
             cursor: pointer;
             font-weight: 800;
             display: inline-block;
-        }
-
-        .receipt-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            object-fit: cover;
-            border: 2px solid #74b9ff;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: none;
         }
 
         .delete-btn {
@@ -325,14 +307,11 @@
 </head>
 <body>
 
-    <!-- 🐧 Pingu & Pinga 親親 Header -->
+    <!-- ⭐️ 星星簡潔可愛 Header -->
     <div class="pinga-header">
-        <div class="pinga-avatar-box">
-            <!-- Pingu & Pinga 親親圖片 -->
-            <img id="pinga-img" src="https://i.imgur.com/G4hG4c4.png" alt="Pingu & Pinga" class="pinga-avatar-img" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/zh/thumb/6/69/Pingu.png/250px-Pingu.png';">
-        </div>
+        <div class="star-avatar-box">⭐️</div>
         <div class="pinga-dialogue" id="pinga-say">
-            Noot Noot! 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！🌸
+            ✨ 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！
         </div>
     </div>
 
@@ -394,7 +373,7 @@
                     <option value="paid">已支付 ✅</option>
                 </select>
             </div>
-            <button class="btn-pinga" onclick="addRenovationItem()">新增工程項目 🌸</button>
+            <button class="btn-pinga" onclick="addRenovationItem()">新增工程項目 ✨</button>
         </div>
 
         <div class="cute-card">
@@ -405,7 +384,7 @@
 
     <!-- ================= 2. 傢俱家電預算頁面 ================= -->
     <div id="appliance-page" style="display: none;">
-        <!-- ✨ 新增：家電預算水庫卡片 -->
+        <!-- 家電預算卡片 -->
         <div class="budget-overview-card" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border-color: #74b9ff;">
             <div class="budget-title" style="color: #dfe6e9;">APPLIANCES REMAINING BUDGET（家電剩餘預算）</div>
             <div class="budget-amount" id="appliance-water-level">$0</div>
@@ -424,7 +403,7 @@
             </div>
         </div>
 
-        <!-- ✨ 新增：家電總預算設定 -->
+        <!-- 家電總預算設定 -->
         <div class="cute-card">
             <h3>⚙️ 設定傢俱與家電總預算</h3>
             <div class="form-group">
@@ -482,7 +461,7 @@
                 <label>金額</label>
                 <input type="number" id="daily-amount" placeholder="0">
             </div>
-            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 🌸</button>
+            <button class="btn-pinga" onclick="addDailyRecord()">記錄下來 ✨</button>
         </div>
 
         <div class="cute-card">
@@ -498,7 +477,7 @@
     </div>
 
 <script>
-    // ================= 🗄️ IndexedDB 大容量收據存儲庫（解決無法顯示問題） =================
+    // ================= 🗄️ IndexedDB 大容量收據存儲庫 =================
     const DB_NAME = 'PingaReceiptsDB_v2';
     const STORE_NAME = 'receipt_files';
     let dbPromise = null;
@@ -520,12 +499,12 @@
         return dbPromise;
     }
 
-    async function saveReceiptFile(fileId, file) {
+    async function saveReceiptFile(fileId, fileData) {
         const db = await getReceiptDB();
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
-            store.put({ id: String(fileId), file: file, name: file.name, type: file.type });
+            store.put({ id: String(fileId), data: fileData.data, name: fileData.name, type: fileData.type });
             tx.oncomplete = () => resolve();
             tx.onerror = (e) => reject(e.target.error);
         });
@@ -549,15 +528,15 @@
     let state = {
         daily: [],
         renovationBudget: 1500000,
-        applianceBudget: 350000, // 新增家電總預算
+        applianceBudget: 350000,
         renovationItems: [],
         applianceItems: []
     };
 
     const pingaQuotes = {
-        renovation: "Noot Noot! 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！🌸",
-        appliance: "Pinga 最喜歡挑新家電了！看著預算水庫買最安心！📺",
-        daily: "今天也有好好省錢嗎？每一筆 Pinga 都幫妳收好！💸"
+        renovation: "✨ 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！",
+        appliance: "⭐️ Pinga 最喜歡挑新家電了！看著預算水庫買最安心！📺",
+        daily: "🌟 今天也有好好省錢嗎？每一筆 Pinga 都幫妳收好！💸"
     };
 
     function loadRoomData() {
@@ -684,42 +663,44 @@
         }
     }
 
-    // --- 📷 照片/收據上傳與顯示處理（核心修復） ---
+    // --- 📷 照片/收據上傳與持久化處理 ---
     async function uploadReceiptFile(type, id, input) {
         const file = input.files[0];
         if (!file) return;
 
-        const fileId = 'receipt_' + Date.now();
-        try {
-            await saveReceiptFile(fileId, file);
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const fileDataUrl = e.target.result;
+            const fileId = 'receipt_' + Date.now();
+            try {
+                await saveReceiptFile(fileId, { data: fileDataUrl, name: file.name, type: file.type });
 
-            const list = type === 'renov' ? state.renovationItems : state.applianceItems;
-            const item = list.find(i => i.id === id);
-            if (item) {
-                item.fileId = fileId;
-                item.fileName = file.name;
-                saveData();
+                const list = type === 'renov' ? state.renovationItems : state.applianceItems;
+                const item = list.find(i => i.id === id);
+                if (item) {
+                    item.fileId = fileId;
+                    item.fileName = file.name;
+                    saveData();
+                }
+            } catch (err) {
+                alert('照片儲存失敗：' + err.message);
             }
-        } catch (err) {
-            alert('照片儲存失敗：' + err.message);
-        }
+        };
+        reader.readAsDataURL(file);
     }
 
     async function viewReceipt(fileId) {
         try {
             const record = await getReceiptFile(fileId);
-            if (!record || !record.file) return alert('找不到照片資料！');
-            
-            if (record.file.type.startsWith('image/')) {
-                const url = URL.createObjectURL(record.file);
-                document.getElementById('modal-img-tag').src = url;
+            if (!record || !record.data) return alert('找不到照片資料！');
+
+            if (record.type && record.type.startsWith('image/')) {
+                document.getElementById('modal-img-tag').src = record.data;
                 document.getElementById('img-modal').style.display = 'flex';
             } else {
-                // PDF 或其他檔案直接下載/開啟
-                const url = URL.createObjectURL(record.file);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = record.name;
+                a.href = record.data;
+                a.download = record.name || 'receipt';
                 a.click();
             }
         } catch (err) {
@@ -763,7 +744,7 @@
 
         const renovContainer = document.getElementById('renovation-list');
         if (!state.renovationItems || state.renovationItems.length === 0) {
-            renovContainer.innerHTML = `<div class="empty-state">🌸 Noot Noot! 還沒有任何工程項目喔</div>`;
+            renovContainer.innerHTML = `<div class="empty-state">✨ 還沒有任何工程項目喔，點擊上方新增吧！</div>`;
         } else {
             renovContainer.innerHTML = state.renovationItems.map(item => `
                 <div class="item-card">
@@ -784,7 +765,7 @@
                             </label>
                             ${item.fileId ? `
                                 <button class="file-upload-btn" style="background:#fff3bf; color:#d9480f;" onclick="viewReceipt('${item.fileId}')">
-                                    🔍 點擊查看收據
+                                    🔍 查看收據
                                 </button>
                             ` : ''}
                         </div>
@@ -809,7 +790,7 @@
 
         const appContainer = document.getElementById('appliance-list');
         if (!state.applianceItems || state.applianceItems.length === 0) {
-            appContainer.innerHTML = `<div class="empty-state">📺 Pinga 沒看到願望清單，快新增喜歡的家電吧！</div>`;
+            appContainer.innerHTML = `<div class="empty-state">📺 願望清單空空的，快新增喜歡的家電吧！</div>`;
         } else {
             appContainer.innerHTML = state.applianceItems.map(item => `
                 <div class="item-card">
@@ -831,7 +812,7 @@
                             </label>
                             ${item.fileId ? `
                                 <button class="file-upload-btn" style="background:#fff3bf; color:#d9480f;" onclick="viewReceipt('${item.fileId}')">
-                                    🔍 點擊查看發票
+                                    🔍 查看發票
                                 </button>
                             ` : ''}
                         </div>
