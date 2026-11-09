@@ -36,32 +36,39 @@
             user-select: auto;
         }
 
-        /* 🐧 Pinga 可愛 Header */
+        /* 🐧 Pingu & Pinga 親親可愛 Header */
         .pinga-header {
             background: linear-gradient(135deg, #ffffff 0%, #fff9db 100%);
             border-radius: var(--radius-cute);
             padding: 12px 18px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             box-shadow: var(--shadow-soft);
             margin-bottom: 12px;
             border: 3px solid #feca57;
         }
 
-        .pinga-avatar-img {
-            height: 90px;
-            width: auto;
-            object-fit: contain;
+        .pinga-avatar-box {
+            position: relative;
             flex-shrink: 0;
+        }
+
+        .pinga-avatar-img {
+            height: 85px;
+            width: 85px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 3px solid #feca57;
+            box-shadow: 0 4px 12px rgba(254, 202, 87, 0.4);
             animation: pingaWiggle 3s infinite ease-in-out;
-            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.12));
+            display: block;
         }
 
         @keyframes pingaWiggle {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-4deg); }
-            75% { transform: rotate(4deg); }
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-3deg) scale(1.02); }
+            75% { transform: rotate(3deg) scale(0.98); }
         }
 
         .pinga-dialogue {
@@ -74,6 +81,7 @@
             border: 2px solid #feca57;
             box-shadow: 0 4px 10px rgba(254, 202, 87, 0.2);
             flex: 1;
+            line-height: 1.4;
         }
 
         /* 🏠 雙人共享房間設定列 */
@@ -241,6 +249,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .file-upload-btn {
@@ -251,6 +261,17 @@
             border-radius: 10px;
             cursor: pointer;
             font-weight: 800;
+            display: inline-block;
+        }
+
+        .receipt-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid #74b9ff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .delete-btn {
@@ -269,15 +290,49 @@
             padding: 30px 10px;
             color: var(--text-sub);
         }
+
+        /* 🖼️ 大圖預覽彈窗 */
+        #img-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        #img-modal img {
+            max-width: 95%;
+            max-height: 85%;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            object-fit: contain;
+        }
+
+        .modal-close-hint {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            font-weight: 900;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 🐧 方案 A：拿紫色小花 Pinga 高清黏土照片 Header -->
+    <!-- 🐧 Pingu & Pinga 親親 Header -->
     <div class="pinga-header">
-        <img id="pinga-img" src="https://i.imgur.com/8Qx7Z3L.png" alt="Pinga" class="pinga-avatar-img" onerror="this.onerror=null; this.src='https://wikimon.net/images/thumb/p/pinga_flower.png/300px-pinga_flower.png';">
+        <div class="pinga-avatar-box">
+            <!-- Pingu & Pinga 親親圖片 -->
+            <img id="pinga-img" src="https://i.imgur.com/G4hG4c4.png" alt="Pingu & Pinga" class="pinga-avatar-img" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/zh/thumb/6/69/Pingu.png/250px-Pingu.png';">
+        </div>
         <div class="pinga-dialogue" id="pinga-say">
-            Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸
+            Noot Noot! 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！🌸
         </div>
     </div>
 
@@ -297,7 +352,7 @@
     <!-- ================= 1. 裝潢工程頁面 ================= -->
     <div id="renovation-page">
         <div class="budget-overview-card">
-            <div class="budget-title">RENOVATION CASH LEVEL</div>
+            <div class="budget-title">RENOVATION CASH LEVEL（裝潢剩餘現金）</div>
             <div class="budget-amount" id="renov-water-level">$0</div>
             <div class="sub-budget-grid">
                 <div class="sub-budget-box">
@@ -319,7 +374,7 @@
             <div class="form-group">
                 <input type="number" id="budget-input" placeholder="請輸入總預算 (例: 1500000)">
             </div>
-            <button class="btn-pinga" style="background: var(--pinga-black);" onclick="setTotalBudget()">更新總預算</button>
+            <button class="btn-pinga" style="background: var(--pinga-black);" onclick="setTotalBudget()">更新裝潢總預算</button>
         </div>
 
         <div class="cute-card">
@@ -343,19 +398,39 @@
         </div>
 
         <div class="cute-card">
-            <h3>📝 裝潢明細與合約/收據</h3>
+            <h3>📝 裝潢明細與收據</h3>
             <div id="renovation-list"></div>
         </div>
     </div>
 
     <!-- ================= 2. 傢俱家電預算頁面 ================= -->
     <div id="appliance-page" style="display: none;">
+        <!-- ✨ 新增：家電預算水庫卡片 -->
         <div class="budget-overview-card" style="background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%); border-color: #74b9ff;">
-            <div class="budget-title" style="color: #dfe6e9;">FURNITURE & APPLIANCES</div>
-            <div class="budget-amount" id="appliance-paid-total">$0</div>
-            <div style="font-size: 12px; color: #ffffff; font-weight: bold;">
-                🛒 預計選購總額：<span id="appliance-planned-total">$0</span>
+            <div class="budget-title" style="color: #dfe6e9;">APPLIANCES REMAINING BUDGET（家電剩餘預算）</div>
+            <div class="budget-amount" id="appliance-water-level">$0</div>
+            <div class="sub-budget-grid">
+                <div class="sub-budget-box">
+                    <label>家電總預算</label>
+                    <strong id="appliance-total-budget">$0</strong>
+                </div>
+                <div class="sub-budget-box">
+                    <label>已購買支出</label>
+                    <strong id="appliance-paid-total" style="color: #55efc4;">$0</strong>
+                </div>
             </div>
+            <div style="margin-top: 10px; font-size: 12px; color: #ffffff; font-weight: bold;">
+                🛒 清單中預計採購總額：<span id="appliance-planned-total">$0</span>
+            </div>
+        </div>
+
+        <!-- ✨ 新增：家電總預算設定 -->
+        <div class="cute-card">
+            <h3>⚙️ 設定傢俱與家電總預算</h3>
+            <div class="form-group">
+                <input type="number" id="app-budget-input" placeholder="請輸入家電總預算 (例: 350000)">
+            </div>
+            <button class="btn-pinga" style="background: #0984e3;" onclick="setApplianceBudget()">更新家電總預算 📺</button>
         </div>
 
         <div class="cute-card">
@@ -416,37 +491,91 @@
         </div>
     </div>
 
+    <!-- 🖼️ 點擊照片放大檢視彈窗 -->
+    <div id="img-modal" onclick="closeImgModal()">
+        <span class="modal-close-hint">✕</span>
+        <img id="modal-img-tag" src="" alt="收據原圖" onclick="event.stopPropagation()">
+    </div>
+
 <script>
+    // ================= 🗄️ IndexedDB 大容量收據存儲庫（解決無法顯示問題） =================
+    const DB_NAME = 'PingaReceiptsDB_v2';
+    const STORE_NAME = 'receipt_files';
+    let dbPromise = null;
+
+    function getReceiptDB() {
+        if (!dbPromise) {
+            dbPromise = new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = (e) => resolve(e.target.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+        return dbPromise;
+    }
+
+    async function saveReceiptFile(fileId, file) {
+        const db = await getReceiptDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            store.put({ id: String(fileId), file: file, name: file.name, type: file.type });
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function getReceiptFile(fileId) {
+        const db = await getReceiptDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.get(String(fileId));
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    // ================= 📝 資料狀態管理 =================
     let currentRoom = localStorage.getItem('pinga_room_id') || 'katy2026';
     document.getElementById('room-id-input').value = currentRoom;
 
     let state = {
         daily: [],
         renovationBudget: 1500000,
+        applianceBudget: 350000, // 新增家電總預算
         renovationItems: [],
         applianceItems: []
     };
 
     const pingaQuotes = {
-        renovation: "Noot Noot! 今天也要跟 Pinga 一起省錢與記帳喔！🌸",
-        appliance: "Pinga 最喜歡看新家家電了！有沒有想買的小花家電？📺",
-        daily: "今天也有好好省錢嗎？Pinga 幫妳記下來！💸"
+        renovation: "Noot Noot! 今天也要跟 Pinga 一起打造最溫馨可愛的新家喔！🌸",
+        appliance: "Pinga 最喜歡挑新家電了！看著預算水庫買最安心！📺",
+        daily: "今天也有好好省錢嗎？每一筆 Pinga 都幫妳收好！💸"
     };
 
     function loadRoomData() {
         const saved = localStorage.getItem('pinga_room_' + currentRoom);
         if (saved) {
             state = JSON.parse(saved);
+            if (!state.applianceBudget) state.applianceBudget = 350000;
         } else {
             state = {
                 daily: [],
                 renovationBudget: 1500000,
+                applianceBudget: 350000,
                 renovationItems: [
-                    { id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", attachment: null },
-                    { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", attachment: null }
+                    { id: 1, name: "第一期泥作工程 🧱", amount: 200000, status: "paid", fileId: null, fileName: null },
+                    { id: 2, name: "全屋系統櫃與木工 🪵", amount: 480000, status: "unpaid", fileId: null, fileName: null }
                 ],
                 applianceItems: [
-                    { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", attachment: null }
+                    { id: 101, name: "滾筒洗衣機 🧺", price: 35000, note: "Panasonic NA-V120 (MOMO 詢價 $32,900)", status: "unpaid", fileId: null, fileName: null }
                 ]
             };
             saveData();
@@ -488,23 +617,33 @@
         }
     }
 
+    // --- 預算設定 ---
     function setTotalBudget() {
         const budget = parseFloat(document.getElementById('budget-input').value);
-        if (isNaN(budget)) return alert('請輸入有效預算');
+        if (isNaN(budget)) return alert('請輸入有效裝潢預算！');
         state.renovationBudget = budget;
         document.getElementById('budget-input').value = '';
         saveData();
     }
 
+    function setApplianceBudget() {
+        const budget = parseFloat(document.getElementById('app-budget-input').value);
+        if (isNaN(budget)) return alert('請輸入有效家電預算！');
+        state.applianceBudget = budget;
+        document.getElementById('app-budget-input').value = '';
+        saveData();
+    }
+
+    // --- 新增項目 ---
     function addRenovationItem() {
         const name = document.getElementById('renov-item-name').value.trim();
         const amount = parseFloat(document.getElementById('renov-item-amount').value);
         const status = document.getElementById('renov-item-status').value;
 
-        if (!name || isNaN(amount)) return alert('請填寫完整資訊');
+        if (!name || isNaN(amount)) return alert('請填寫完整資訊！');
 
         if (!state.renovationItems) state.renovationItems = [];
-        state.renovationItems.unshift({ id: Date.now(), name, amount, status, attachment: null });
+        state.renovationItems.unshift({ id: Date.now(), name, amount, status, fileId: null, fileName: null });
         document.getElementById('renov-item-name').value = '';
         document.getElementById('renov-item-amount').value = '';
         saveData();
@@ -516,10 +655,10 @@
         const note = document.getElementById('app-note').value.trim();
         const status = document.getElementById('app-status').value;
 
-        if (!name || isNaN(price)) return alert('請填寫品項名稱與金額');
+        if (!name || isNaN(price)) return alert('請填寫品項名稱與金額！');
 
         if (!state.applianceItems) state.applianceItems = [];
-        state.applianceItems.unshift({ id: Date.now(), name, price, note, status, attachment: null });
+        state.applianceItems.unshift({ id: Date.now(), name, price, note, status, fileId: null, fileName: null });
         document.getElementById('app-name').value = '';
         document.getElementById('app-price').value = '';
         document.getElementById('app-note').value = '';
@@ -545,20 +684,52 @@
         }
     }
 
-    function uploadFile(type, id, input) {
+    // --- 📷 照片/收據上傳與顯示處理（核心修復） ---
+    async function uploadReceiptFile(type, id, input) {
         const file = input.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
+        const fileId = 'receipt_' + Date.now();
+        try {
+            await saveReceiptFile(fileId, file);
+
             const list = type === 'renov' ? state.renovationItems : state.applianceItems;
             const item = list.find(i => i.id === id);
             if (item) {
-                item.attachment = { name: file.name, data: e.target.result, isImage: file.type.startsWith('image/') };
+                item.fileId = fileId;
+                item.fileName = file.name;
                 saveData();
             }
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            alert('照片儲存失敗：' + err.message);
+        }
+    }
+
+    async function viewReceipt(fileId) {
+        try {
+            const record = await getReceiptFile(fileId);
+            if (!record || !record.file) return alert('找不到照片資料！');
+            
+            if (record.file.type.startsWith('image/')) {
+                const url = URL.createObjectURL(record.file);
+                document.getElementById('modal-img-tag').src = url;
+                document.getElementById('img-modal').style.display = 'flex';
+            } else {
+                // PDF 或其他檔案直接下載/開啟
+                const url = URL.createObjectURL(record.file);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = record.name;
+                a.click();
+            }
+        } catch (err) {
+            alert('無法開啟收據：' + err.message);
+        }
+    }
+
+    function closeImgModal() {
+        document.getElementById('img-modal').style.display = 'none';
+        document.getElementById('modal-img-tag').src = '';
     }
 
     function addDailyRecord() {
@@ -575,16 +746,18 @@
         saveData();
     }
 
+    // --- 畫面渲染 ---
     function render() {
-        // 1. 裝潢
+        // 1. 裝潢數據計算
         let paidTotal = 0, unpaidTotal = 0;
         (state.renovationItems || []).forEach(i => {
             if (i.status === 'paid') paidTotal += i.amount;
             else unpaidTotal += i.amount;
         });
 
-        document.getElementById('renov-water-level').innerText = `$${((state.renovationBudget || 1500000) - paidTotal).toLocaleString()}`;
-        document.getElementById('renov-total-budget').innerText = `$${(state.renovationBudget || 1500000).toLocaleString()}`;
+        const renovBudget = state.renovationBudget || 1500000;
+        document.getElementById('renov-water-level').innerText = `$${(renovBudget - paidTotal).toLocaleString()}`;
+        document.getElementById('renov-total-budget').innerText = `$${renovBudget.toLocaleString()}`;
         document.getElementById('renov-paid-total').innerText = `$${paidTotal.toLocaleString()}`;
         document.getElementById('renov-unpaid-total').innerText = `$${unpaidTotal.toLocaleString()}`;
 
@@ -606,10 +779,14 @@
                     <div class="attachment-box">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <label class="file-upload-btn">
-                                📎 ${item.attachment ? '更換收據' : '上傳收據/合約'}
-                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('renov', ${item.id}, this)">
+                                📷 ${item.fileId ? '更換收據' : '拍照/上傳收據'}
+                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadReceiptFile('renov', ${item.id}, this)">
                             </label>
-                            ${item.attachment ? (item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank" style="font-size:11px;color:#0984e3;font-weight:bold;">[查看照片]</a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}" style="font-size:11px;color:#0984e3;font-weight:bold;">[下載檔案]</a>`) : ''}
+                            ${item.fileId ? `
+                                <button class="file-upload-btn" style="background:#fff3bf; color:#d9480f;" onclick="viewReceipt('${item.fileId}')">
+                                    🔍 點擊查看收據
+                                </button>
+                            ` : ''}
                         </div>
                         <button class="delete-btn" onclick="deleteItem('renov', ${item.id})">🗑️ 刪除</button>
                     </div>
@@ -617,13 +794,16 @@
             `).join('');
         }
 
-        // 2. 家電
+        // 2. 家電數據計算（含總預算水庫）
         let appPaid = 0, appPlanned = 0;
         (state.applianceItems || []).forEach(i => {
             appPlanned += i.price;
             if (i.status === 'paid') appPaid += i.price;
         });
 
+        const appBudget = state.applianceBudget || 350000;
+        document.getElementById('appliance-water-level').innerText = `$${(appBudget - appPaid).toLocaleString()}`;
+        document.getElementById('appliance-total-budget').innerText = `$${appBudget.toLocaleString()}`;
         document.getElementById('appliance-paid-total').innerText = `$${appPaid.toLocaleString()}`;
         document.getElementById('appliance-planned-total').innerText = `$${appPlanned.toLocaleString()}`;
 
@@ -646,10 +826,14 @@
                     <div class="attachment-box">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <label class="file-upload-btn">
-                                📎 ${item.attachment ? '更換照片' : '上傳發票/保固卡'}
-                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadFile('appliance', ${item.id}, this)">
+                                📷 ${item.fileId ? '更換照片' : '上傳發票/保固卡'}
+                                <input type="file" style="display:none;" accept="image/*,.pdf" onchange="uploadReceiptFile('appliance', ${item.id}, this)">
                             </label>
-                            ${item.attachment ? (item.attachment.isImage ? `<a href="${item.attachment.data}" target="_blank" style="font-size:11px;color:#0984e3;font-weight:bold;">[查看照片]</a>` : `<a href="${item.attachment.data}" download="${item.attachment.name}" style="font-size:11px;color:#0984e3;font-weight:bold;">[下載檔案]</a>`) : ''}
+                            ${item.fileId ? `
+                                <button class="file-upload-btn" style="background:#fff3bf; color:#d9480f;" onclick="viewReceipt('${item.fileId}')">
+                                    🔍 點擊查看發票
+                                </button>
+                            ` : ''}
                         </div>
                         <button class="delete-btn" onclick="deleteItem('appliance', ${item.id})">🗑️ 刪除</button>
                     </div>
